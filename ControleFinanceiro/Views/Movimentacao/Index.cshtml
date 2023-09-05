@@ -1,0 +1,48 @@
+﻿@model ControleFinanceiro.Models.MovimentacaoViewModel
+
+@{
+    ViewData["Title"] = "Movimentações";
+}
+
+<h3>Movimentações</h3>
+<hr />
+
+<div class="row g-3 align-items-center">
+    <div class="col-auto">
+        <label asp-for="DataInicial" class="col-form-label"></label>
+    </div>
+    <div class="col-auto">
+        <input readonly asp-for="DataInicial" class="form-control" aria-describedby="passwordHelpInline">
+    </div>
+    <div class="col-auto">
+        <label asp-for="DataFinal" class="col-form-label"></label>
+    </div>
+    <div class="col-auto">
+        <input readonly asp-for="DataFinal" class="form-control" aria-describedby="passwordHelpInline">
+    </div>
+    <div class="col-auto">
+        <input class="btn btn-primary" type="submit" value="Anterior">
+        <input class="btn btn-primary" type="submit" value="Próxima">
+    </div>
+</div>
+
+<br />
+<br />
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <td>Categoria</td>
+            <td>Descrição</td>
+            <td>Valor</td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Diego</td>
+            <td>Diego</td>
+            <td>Diego</td>
+        </tr>
+    </tbody>
+</table>
+
+@* <a asp-action="Cadastrar" class="btn btn-primary">Cadastrar</a> *@

@@ -1,0 +1,33 @@
+﻿@model ControleFinanceiro.Models.MovimentacaoCategoriaCadastroViewModel
+
+@{
+    ViewData["Title"] = "Cadastrar Categoria de Movimentação";
+}
+
+<h3>Cadastrar Categoria de Movimentação</h3>
+<hr />
+
+<form asp-action="Cadastrar">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-2">
+        <label asp-for="Descricao" class="control-label"></label>
+        <input asp-for="Descricao" class="form-control" />
+        <span asp-validation-for="Descricao" class="text-danger"></span>
+    </div>
+    <div class="mb-2">
+        <div class="form-check">
+            <label asp-for="Ativo" class="form-check-label"></label>
+            <input asp-for="Ativo" class="form-check-input" />
+        </div>
+    </div>
+    <div class="mb-3">
+        <button class="btn btn-primary">Cadastrar</button>
+        <button class="btn btn-light" asp-action="Index">Voltar</button>
+    </div>
+
+</form>
+
+
+
+
+
