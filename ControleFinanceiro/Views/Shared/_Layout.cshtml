@@ -26,7 +26,7 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="MovimentacaoCategoria" asp-action="Index">Categoria de Movimentação</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="MovimentacaoRecorrente" asp-action="Index">Movimentações Recorrentes</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Parcelamento" asp-action="Index">Parcelamentos</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Movimentacao" asp-action="Index">Movimentações</a>
@@ -44,7 +44,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2023 - Controle Financeiro - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; @DateTime.Now.Year - Controle Financeiro - <a asp-area="" asp-controller="Home" asp-action="Index">Página Principal</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

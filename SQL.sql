@@ -13,55 +13,56 @@ CREATE TABLE MovimentacaoCategoria
 	Ativo bit not null default 0,
 )
 
-CREATE TABLE MovimentacaoRecorrenteTipo --Entrada/Saída
+CREATE TABLE MovimentacaoTipo --Entrada/Saída
 (
 	Codigo uniqueidentifier primary key,
 	Descricao varchar(255) not null,
 	Ativo bit not null default 0,
 )
 
-CREATE TABLE MovimentacaoRecorrente
+CREATE TABLE Parcelamento
 (
 	Codigo uniqueidentifier primary key,
-	CodigoMovimentacaoRecorrenteTipo uniqueidentifier foreign key references MovimentacaoRecorrenteTipo(Codigo),
+	CodigoMovimentacaoTipo uniqueidentifier foreign key references MovimentacaoTipo(Codigo),
 	CodigoMovimentacaoCategoria uniqueidentifier foreign key references MovimentacaoCategoria(Codigo),
 	Descricao varchar(255) not null,
 	QuantidadeParcela smallint, 
 	Valor money not null,
 	DataPrimeiraParcela Date not null,
-	DataUltimaParcela Date not null,
-	DataHora Datetime not null,
-	Continua bit default 0
+	DataHora Datetime not null
 )
 
 
 CREATE TABLE Movimentacao
 (
 	Codigo uniqueidentifier primary key,
+	CodigoParcelamento uniqueidentifier foreign key references Parcelamento(Codigo) default null,
+	DataMovimentacao Date not null,
 	DataHora datetime not null,
 	Valor money,
-	CodigoMovimetacaoCategoria uniqueidentifier foreign key references MovimentacaoCategoria(Codigo),
-	CodigoMovimentacaoRecorrenteTipo uniqueidentifier foreign key references MovimentacaoRecorrenteTipo(Codigo),
+	CodigoMovimentacaoCategoria uniqueidentifier foreign key references MovimentacaoCategoria(Codigo) not null,
+	CodigoMovimentacaoTipo uniqueidentifier foreign key references MovimentacaoTipo(Codigo) not null,
 	Descricao varchar(255) null
 )
 
-INSERT INTO MovimentacaoRecorrenteTipo
+INSERT INTO MovimentacaoTipo
 VALUES
-('8dca6dc6-ffd3-41b7-b78f-2af0d081a8d2','Entrada', 1),
-('6f4635f2-113f-4846-9fae-eb66870af2d5','Saída',1)
+('9EDF4D03-BFB8-4B59-B456-6C12E4031B40','Entrada', 1),
+('B7BA8BF6-A1E9-4E00-9DE4-5BFF52F5D56A','Saída',1)
 
 INSERT INTO MovimentacaoCategoria
 VALUES 
-('1f9a0c6c-b823-4cac-85e1-7e974a5dce41','Uber',1),
-('87e2104f-a8db-4924-8fed-4be10d61e2e7','Mercado',1),
-('f925b8d5-85c4-477f-b660-22e5108acd36','Financiamento Imóvel',1),
-('8e85647c-a14d-4b77-a015-aec271f0ad5d','Salário CLT',1),
-('2931daa6-c1c2-4039-b87a-f77643ed0bbe','Outras Receitas',1),
-('02504f44-bf7d-4c4b-be80-69320a3fbebe','Combustível',1),
-('42d92351-cc01-42d9-9c9d-d7014b2b9c5f','Farmácia',1),
-('50b91a25-d5c9-4c40-81e5-f854cafa70bd','Alimentação',1)
+--('F35BD2FA-B05B-42E4-AA12-665CA02D27DE','Transporte',1),
+--('A3D7E0BE-F4BD-4E5D-9A02-13BCDA7C18DD','Mercado',1),
+--('88D23073-CA4A-41B5-B576-5924FD614EB1','Moradia',1),
+--('DD39D1D1-29DF-44E7-A5CA-193B39A4A4D7','Carro',1),
+--('AB4C85B4-21A1-4E33-B485-B8519F105A42','Receita',1),
+--('1DB7844F-253A-4AE1-B5FC-C60E6868C871','Saúde',1),
+--('13C73BDE-0E03-4E53-98EF-323875BDC125','Lazer/Hobbie',1),
+('7B6390C0-BBFB-48E3-836A-7907E5FB5996','Estudo', 1),
+('CB26AA01-EC1C-421B-AC0D-78EEEC80B959','Outros', 1)
 
-GO
+--GO
 
 --USE master
 

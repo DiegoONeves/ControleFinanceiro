@@ -1,0 +1,50 @@
+﻿@model ControleFinanceiro.Models.ParcelamentoEdicaoViewModel
+
+@{
+    ViewData["Title"] = "Editar Parcelamento";
+}
+
+<h3>Editar Parcelamento</h3>
+<hr />
+
+<form asp-action="Editar">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    @Html.HiddenFor(x=>x.Codigo)
+    <div class="mb-2">
+        <label asp-for="CodigoMovimentacaoCategoria" class="control-label"></label>
+        <select asp-for="CodigoMovimentacaoCategoria" class="form-control" asp-items="@Model.Categorias">
+            <option selected value="">Selecione uma categoria</option>
+        </select>
+        <span asp-validation-for="CodigoMovimentacaoCategoria" class="text-danger"></span>
+    </div>
+    <div class="mb-2">
+        <label asp-for="Descricao" class="control-label"></label>
+        <input asp-for="Descricao" class="form-control" />
+        <span asp-validation-for="Descricao" class="text-danger"></span>
+    </div>
+    <div class="mb-2">
+        <label asp-for="QuantidadeParcela" class="control-label"></label>
+        <input asp-for="QuantidadeParcela" class="form-control" />
+        <span asp-validation-for="QuantidadeParcela" class="text-danger"></span>
+    </div>
+    <div class="mb-2">
+        <label asp-for="DataPrimeiraParcela" class="control-label"></label>
+        <input asp-for="DataPrimeiraParcela" class="form-control" />
+        <span asp-validation-for="DataPrimeiraParcela" class="text-danger"></span>
+    </div>
+    <div class="mb-2">
+        <label asp-for="Valor" class="control-label"></label>
+        <input asp-for="Valor" class="form-control" />
+        <span asp-validation-for="Valor" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <button class="btn btn-primary">Editar</button>
+        <button class="btn btn-light" asp-action="Index">Voltar</button>
+    </div>
+
+</form>
+
+
+
+
+

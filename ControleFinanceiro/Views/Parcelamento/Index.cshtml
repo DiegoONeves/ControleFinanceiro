@@ -1,0 +1,39 @@
+﻿@model IList<ControleFinanceiro.Models.ParcelamentoViewModel>
+
+@{
+    ViewData["Title"] = "Parcelamentos em andamento";
+}
+
+<h3>Parcelamentos em andamento</h3>
+<hr />
+
+<a asp-action="Cadastrar" class="btn btn-primary">Cadastrar</a>
+
+<br />
+<br />
+
+<table class="table table-hover table-bordered">
+    <thead>
+        <tr class="table-primary">
+            <td>Data da primeira parcela</td>
+            <td>Categoria</td>
+            <td>Descrição</td>
+            <td>Quantidade de parcelas</td>
+            <td>Valor da parcela</td>
+            <td>Ações</td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.DataPrimeiraParcela.ToShortDateString()</td>
+                <td>@item.Categoria</td>
+                <td>@item.Descricao</td>
+                <td>@item.QuantidadeParcela</td>
+                <td>@item.Valor.ToString("C")</td>
+                <td><a asp-action="Editar" class="btn btn-primary" asp-route-codigo="@item.Codigo">Editar</a></td>
+            </tr>
+        }
+    </tbody>
+</table>

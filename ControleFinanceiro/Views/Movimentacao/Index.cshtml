@@ -6,43 +6,56 @@
 
 <h3>Movimentações</h3>
 <hr />
-
+<form method="post">
+    <div class="row g-3 align-items-center">
+        <div class="col-auto">
+            <input class="btn btn-secondary" type="submit" value="Anterior" asp-for="Direcao">
+        </div>
+        <div class="col-auto">
+            <input readonly asp-for="Periodo" class="form-control">
+        </div>
+        <div class="col-auto">
+            <input class="btn btn-secondary" type="submit" value="Próxima" asp-for="Direcao">
+        </div>
+    </div>
+</form>
+<br />
 <div class="row g-3 align-items-center">
     <div class="col-auto">
-        <label asp-for="DataInicial" class="col-form-label"></label>
-    </div>
-    <div class="col-auto">
-        <input readonly asp-for="DataInicial" class="form-control" aria-describedby="passwordHelpInline">
-    </div>
-    <div class="col-auto">
-        <label asp-for="DataFinal" class="col-form-label"></label>
-    </div>
-    <div class="col-auto">
-        <input readonly asp-for="DataFinal" class="form-control" aria-describedby="passwordHelpInline">
-    </div>
-    <div class="col-auto">
-        <input class="btn btn-primary" type="submit" value="Anterior">
-        <input class="btn btn-primary" type="submit" value="Próxima">
+        <a asp-action="Cadastrar" class="btn btn-primary">Cadastrar</a>
     </div>
 </div>
 
 <br />
 <br />
-<table class="table table-hover">
+<table class="table table-hover table-bordered">
     <thead>
-        <tr>
+        <tr class="table-primary">
+            <td>Data Movimentação</td>
             <td>Categoria</td>
             <td>Descrição</td>
             <td>Valor</td>
+            <td>Ações</td>
         </tr>
     </thead>
     <tbody>
-        <tr>
-            <td>Diego</td>
-            <td>Diego</td>
-            <td>Diego</td>
+        @foreach (var item in Model.Movimentacoes)
+        {
+            <tr>
+                <td>@item.DataMovimentacao.ToShortDateString()</td>
+                <td>@item.Categoria</td>
+                <td>@item.Descricao</td>
+                <td class="@item.CorDoTextDeValor">@item.Valor.ToString("C")</td>
+                <td><a asp-action="Editar" class="btn btn-primary" asp-route-codigo="@item.Codigo">Editar</a></td>
+            </tr>
+        }
+        <tr class="table table-dark">
+            <td colspan="4">Total</td>
+            <td>@Model.Valor.ToString("C")</td>
         </tr>
     </tbody>
 </table>
+<br />
+
 
 @* <a asp-action="Cadastrar" class="btn btn-primary">Cadastrar</a> *@
