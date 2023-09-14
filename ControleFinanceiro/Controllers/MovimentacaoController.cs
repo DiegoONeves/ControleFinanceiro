@@ -10,11 +10,16 @@ namespace ControleFinanceiro.Controllers
         private readonly MovimentacaoService _service;
         private readonly MovimentacaoCategoriaService _categoriaService;
         private readonly MovimentacaoTipoService _tipoService;
-        public MovimentacaoController(MovimentacaoService service, MovimentacaoCategoriaService categoriaService, MovimentacaoTipoService tipoService)
+        private readonly CartaoDeCreditoService _cartaoDeCreditoService;
+        public MovimentacaoController(MovimentacaoService service, 
+            MovimentacaoCategoriaService categoriaService, 
+            MovimentacaoTipoService tipoService,
+            CartaoDeCreditoService cartaoDeCreditoService)
         {
             _service = service;
             _tipoService = tipoService;
             _categoriaService = categoriaService;
+            _cartaoDeCreditoService = cartaoDeCreditoService;
         }
 
         public IActionResult Index()
@@ -38,7 +43,7 @@ namespace ControleFinanceiro.Controllers
         {
             MovimentacaoNovaViewModel model = new()
             {
-                DataMovimentacao = DateOnly.FromDateTime(DateTime.Now),
+                DataDaCompra = DateOnly.FromDateTime(DateTime.Now),
             };
             CarregarListagens(model);
             return View(model);
@@ -78,7 +83,7 @@ namespace ControleFinanceiro.Controllers
             return View(model);
         }
 
-        private void CarregarListagens(MovimentacaoNovaViewModel model)
+        private void CarregarListagens(dynamic model)
         {
             model.Tipos = _tipoService.Obter().Select(c => new SelectListItem()
             {
@@ -91,19 +96,10 @@ namespace ControleFinanceiro.Controllers
                 Text = $"{c.Descricao}",
                 Value = c.Codigo.ToString()
             }).ToList();
-        }
 
-        private void CarregarListagens(MovimentacaoEdicaoViewModel model)
-        {
-            model.Tipos = _tipoService.Obter().Select(c => new SelectListItem()
+            model.CartoesDeCredito = _cartaoDeCreditoService.Obter().Select(c => new SelectListItem()
             {
-                Text = $"{c.Descricao}",
-                Value = c.Codigo.ToString()
-            }).ToList();
-
-            model.Categorias = _categoriaService.Obter().Select(c => new SelectListItem()
-            {
-                Text = $"{c.Descricao}",
+                Text = $"Crédito/{c.BandeiraCartao.Descricao}/{c.NumeroCartao.Substring(12, 4)}/{(c.Virtual ? "Virtual" : "Físico")}",
                 Value = c.Codigo.ToString()
             }).ToList();
         }

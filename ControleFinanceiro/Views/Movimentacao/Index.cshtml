@@ -31,7 +31,9 @@
 <table class="table table-hover table-bordered">
     <thead>
         <tr class="table-primary">
-            <td>Data Movimentação</td>
+            <td>Meio de parcelamento</td>
+            <td>Data de movimentação</td>
+            <td>Data da compra</td>
             <td>Categoria</td>
             <td>Descrição</td>
             <td>Valor</td>
@@ -42,7 +44,9 @@
         @foreach (var item in Model.Movimentacoes)
         {
             <tr>
+                <td>@item.MeioDeParcelamento</td>
                 <td>@item.DataMovimentacao.ToShortDateString()</td>
+                <td>@item.DataDaCompra.ToShortDateString()</td>
                 <td>@item.Categoria</td>
                 <td>@item.Descricao</td>
                 <td class="@item.CorDoTextDeValor">@item.Valor.ToString("C")</td>
@@ -50,8 +54,8 @@
             </tr>
         }
         <tr class="table table-dark">
-            <td colspan="4">Total</td>
-            <td>@Model.Valor.ToString("C")</td>
+            <td colspan="5">Total</td>
+            <td colspan="2">@Model.Valor.ToString("C")</td>
         </tr>
     </tbody>
 </table>

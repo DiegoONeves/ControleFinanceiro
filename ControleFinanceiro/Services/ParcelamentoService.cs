@@ -88,12 +88,13 @@ namespace ControleFinanceiro.Services
         {
             using (TransactionScope scope = new())
             {
+                DateTime dataDaCompra = model.DataDaCompra.ToDateTime(TimeOnly.Parse("10:00 PM"));
                 DateOnly dataDaParcela = model.CodigoCartaoDeCredito is null ? model.DataDaCompra : _cartaoDeCreditoService.ObterDataDaParcela(model.CodigoCartaoDeCredito.Value, model.DataDaCompra);
                 var dataPrimeiraParcela = dataDaParcela.ToDateTime(TimeOnly.Parse("10:00 PM"));
                 Parcelamento p = new()
                 {
                     Codigo = Guid.NewGuid(),
-                    DataDaCompra = model.DataDaCompra.ToDateTime(TimeOnly.Parse("10:00 PM")),
+                    DataDaCompra = dataDaCompra,
                     Descricao = model.Descricao,
                     QuantidadeParcela = model.QuantidadeParcela,
                     CodigoMovimentacaoCategoria = model.CodigoMovimentacaoCategoria,
@@ -111,11 +112,13 @@ namespace ControleFinanceiro.Services
                     MovimentacaoNovaViewModel m = new()
                     {
                         DataMovimentacao = dataDaParcela,
+                        DataDaCompra = model.DataDaCompra,
                         CodigoMovimentacaoTipo = _movimentacaoTipoService.Obter().First(x => x.Descricao.ToLower() == "saída").Codigo,
                         CodigoParcelamento = p.Codigo,
                         Valor = model.Valor * -1,
                         Descricao = $"Parcela {i + 1} de {model.QuantidadeParcela} - {model.Descricao}",
                         CodigoMovimentacaoCategoria = model.CodigoMovimentacaoCategoria,
+                        CodigoCartaoDeCredito = model.CodigoCartaoDeCredito
                     };
                     _movimentacaoService.InserirMovimentacao(m);
                 }

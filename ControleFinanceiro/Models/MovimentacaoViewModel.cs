@@ -8,7 +8,6 @@ namespace ControleFinanceiro.Models
         public string Periodo { get; set; } = string.Empty;
         public string Direcao { get; set; } = string.Empty;
         public decimal Valor { get; set; }
-
-        public List<MovimentacaoItemViewModel> Movimentacoes { get; set; } = new();
+        public IEnumerable<MovimentacaoItemViewModel> Movimentacoes { get; set; }
     }
 }
