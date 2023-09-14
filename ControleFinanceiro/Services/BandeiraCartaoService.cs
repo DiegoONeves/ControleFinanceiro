@@ -1,6 +1,9 @@
 ﻿namespace ControleFinanceiro.Services
 {
-    public class BandeiraCartaoService
+    public class BandeiraCartaoService : BaseService
     {
+        public BandeiraCartaoService(IConfiguration config) : base(config)
+        {
+        }
     }
 }

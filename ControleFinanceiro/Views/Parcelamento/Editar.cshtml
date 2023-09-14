@@ -18,6 +18,13 @@
         <span asp-validation-for="CodigoMovimentacaoCategoria" class="text-danger"></span>
     </div>
     <div class="mb-2">
+        <label asp-for="CodigoCartaoDeCredito" class="control-label"></label>
+        <select asp-for="CodigoCartaoDeCredito" class="form-control" asp-items="@Model.CartoesDeCredito">
+            <option selected value="">Selecione um cartão de crédito</option>
+        </select>
+        <span asp-validation-for="CodigoCartaoDeCredito" class="text-danger"></span>
+    </div>
+    <div class="mb-2">
         <label asp-for="Descricao" class="control-label"></label>
         <input asp-for="Descricao" class="form-control" />
         <span asp-validation-for="Descricao" class="text-danger"></span>
@@ -28,9 +35,9 @@
         <span asp-validation-for="QuantidadeParcela" class="text-danger"></span>
     </div>
     <div class="mb-2">
-        <label asp-for="DataPrimeiraParcela" class="control-label"></label>
-        <input asp-for="DataPrimeiraParcela" class="form-control" />
-        <span asp-validation-for="DataPrimeiraParcela" class="text-danger"></span>
+        <label asp-for="DataDaCompra" class="control-label"></label>
+        <input asp-for="DataDaCompra" class="form-control" />
+        <span asp-validation-for="DataDaCompra" class="text-danger"></span>
     </div>
     <div class="mb-2">
         <label asp-for="Valor" class="control-label"></label>

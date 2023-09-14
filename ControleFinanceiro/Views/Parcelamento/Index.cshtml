@@ -1,7 +1,7 @@
-﻿@model IList<ControleFinanceiro.Models.ParcelamentoViewModel>
+﻿@model IEnumerable<ControleFinanceiro.Models.ParcelamentoViewModel>
 
 @{
-    ViewData["Title"] = "Parcelamentos em andamento";
+    ViewData["Title"] = "Parcelamentos";
 }
 
 <h3>Parcelamentos em andamento</h3>
@@ -15,7 +15,10 @@
 <table class="table table-hover table-bordered">
     <thead>
         <tr class="table-primary">
+            <td>Meio de parcelamento</td>
+            <td>Data da compra</td>
             <td>Data da primeira parcela</td>
+            <td>Data da última parcela</td>
             <td>Categoria</td>
             <td>Descrição</td>
             <td>Quantidade de parcelas</td>
@@ -27,7 +30,10 @@
         @foreach (var item in Model)
         {
             <tr>
+                <td>@item.MeioDeParcelamento</td>
+                <td>@item.DataDaCompra.ToShortDateString()</td>
                 <td>@item.DataPrimeiraParcela.ToShortDateString()</td>
+                <td>@item.DataUltimaParcela.ToShortDateString()</td>
                 <td>@item.Categoria</td>
                 <td>@item.Descricao</td>
                 <td>@item.QuantidadeParcela</td>

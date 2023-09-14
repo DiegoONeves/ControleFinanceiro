@@ -1,7 +1,9 @@
 ﻿using ControleFinanceiro.Entities;
 using ControleFinanceiro.Models;
 using Dapper;
+using Microsoft.VisualBasic;
 using System.Data.SqlClient;
+using System.Text;
 using System.Transactions;
 
 namespace ControleFinanceiro.Services
@@ -10,21 +12,61 @@ namespace ControleFinanceiro.Services
     {
         private readonly MovimentacaoService _movimentacaoService;
         private readonly MovimentacaoTipoService _movimentacaoTipoService;
-        public ParcelamentoService(IConfiguration config, MovimentacaoService movimentacaoService, MovimentacaoTipoService movimentacaoTipoService)
+        private readonly CartaoDeCreditoService _cartaoDeCreditoService;
+        public ParcelamentoService(IConfiguration config,
+            MovimentacaoService movimentacaoService,
+            MovimentacaoTipoService movimentacaoTipoService,
+            CartaoDeCreditoService cartaoDeCreditoService)
             : base(config)
         {
             _movimentacaoService = movimentacaoService;
             _movimentacaoTipoService = movimentacaoTipoService;
+            _cartaoDeCreditoService = cartaoDeCreditoService;
         }
 
-        public List<ParcelamentoViewModel> Obter(Guid? codigo = null)
+        public List<Parcelamento> Obter(Guid? codigo = null)
         {
-            List<ParcelamentoViewModel> r = new();
+            StringBuilder sb = new();
+            sb.AppendLine("SELECT A.*,B.*,C.*,D.* FROM Parcelamento A (NOLOCK) ");
+            sb.AppendLine("INNER JOIN MovimentacaoCategoria B (NOLOCK) ON A.CodigoMovimentacaoCategoria = B.Codigo ");
+            sb.AppendLine("LEFT JOIN CartaoDeCredito C (NOLOCK) ON A.CodigoCartaoDeCredito = C.Codigo ");
+            sb.AppendLine("LEFT JOIN BandeiraCartao D (NOLOCK) ON C.CodigoBandeiraCartao = D.Codigo ");
+            sb.AppendLine("WHERE A.Codigo = ISNULL(@Codigo,A.Codigo) ORDER BY A.DataDaCompra DESC ");
 
             using (var conn = new SqlConnection(ConnectionString))
-                r = conn.Query<ParcelamentoViewModel>("SELECT A.*,B.Descricao Categoria FROM Parcelamento A INNER JOIN MovimentacaoCategoria B ON A.CodigoMovimentacaoCategoria = B.Codigo WHERE A.Codigo = ISNULL(@Codigo,A.Codigo) ORDER BY A.DataHora DESC", new { @Codigo = codigo }).ToList();
+                return conn.Query<Parcelamento, MovimentacaoCategoria, CartaoDeCredito, BandeiraCartao, Parcelamento>(sb.ToString(), (parcelamento, categoria, cartaoDeCredito, bandeiraCartao) =>
+                {
+                    parcelamento.MovimentacaoCategoria = categoria;
+                    if (cartaoDeCredito is not null)
+                    {
+                        cartaoDeCredito.BandeiraCartao = bandeiraCartao;
+                        parcelamento.CartaoDeCredito = cartaoDeCredito;
+                    }
 
-            return r;
+                    return parcelamento;
+                }, new { @Codigo = codigo },
+                splitOn: "Codigo").ToList();
+        }
+
+        public IEnumerable<ParcelamentoViewModel> ObterParaListar()
+        {
+            foreach (var item in Obter())
+            {
+                yield return new ParcelamentoViewModel
+                {
+                    Codigo = item.Codigo,
+                    Categoria = item.MovimentacaoCategoria.Descricao,
+                    CodigoCartaoDeCredito = item.CodigoCartaoDeCredito,
+                    CodigoMovimentacaoCategoria = item.CodigoMovimentacaoCategoria,
+                    Descricao = item.Descricao,
+                    DataDaCompra = item.DataDaCompra,
+                    DataPrimeiraParcela = item.DataPrimeiraParcela,
+                    DataUltimaParcela = item.DataUltimaParcela,
+                    QuantidadeParcela = item.QuantidadeParcela,
+                    Valor = item.Valor,
+                    MeioDeParcelamento = item.CodigoCartaoDeCredito is null ? "Outro" : $"Crédito/{item?.CartaoDeCredito?.BandeiraCartao.Descricao}/{item?.CartaoDeCredito?.NumeroCartao.Substring(12, 4)}/{((item?.CartaoDeCredito?.Virtual ?? false) ? "Virtual" : "Físico")}"
+                };
+            }
         }
 
         public ParcelamentoEdicaoViewModel ObterParaEditar(Guid codigo)
@@ -32,6 +74,8 @@ namespace ControleFinanceiro.Services
             ParcelamentoEdicaoViewModel r = new();
             var resultado = Obter(codigo).First();
             r.DataPrimeiraParcela = DateOnly.FromDateTime(resultado.DataPrimeiraParcela);
+            r.DataDaCompra = DateOnly.FromDateTime(resultado.DataPrimeiraParcela);
+            r.CodigoCartaoDeCredito = resultado.CodigoCartaoDeCredito;
             r.Codigo = resultado.Codigo;
             r.Valor = resultado.Valor;
             r.CodigoMovimentacaoCategoria = resultado.CodigoMovimentacaoCategoria;
@@ -42,14 +86,14 @@ namespace ControleFinanceiro.Services
 
         public void AbrirTransacaoParaInserirNovoParcelamento(ParcelamentoNovoViewModel model)
         {
-            DateOnly dataDaParcela = model.DataPrimeiraParcela;
-
             using (TransactionScope scope = new())
             {
-                var dataPrimeiraParcela = model.DataPrimeiraParcela.ToDateTime(TimeOnly.Parse("10:00 PM"));
+                DateOnly dataDaParcela = model.CodigoCartaoDeCredito is null ? model.DataDaCompra : _cartaoDeCreditoService.ObterDataDaParcela(model.CodigoCartaoDeCredito.Value, model.DataDaCompra);
+                var dataPrimeiraParcela = dataDaParcela.ToDateTime(TimeOnly.Parse("10:00 PM"));
                 Parcelamento p = new()
                 {
                     Codigo = Guid.NewGuid(),
+                    DataDaCompra = model.DataDaCompra.ToDateTime(TimeOnly.Parse("10:00 PM")),
                     Descricao = model.Descricao,
                     QuantidadeParcela = model.QuantidadeParcela,
                     CodigoMovimentacaoCategoria = model.CodigoMovimentacaoCategoria,
@@ -59,7 +103,7 @@ namespace ControleFinanceiro.Services
                     DataHora = DateTime.Now
                 };
                 using var conn = new SqlConnection(ConnectionString);
-                conn.Execute("insert into Parcelamento (Codigo,QuantidadeParcela,DataPrimeiraParcela,DataHora,Valor,CodigoMovimentacaoCategoria,Descricao,DataUltimaParcela) values (@Codigo,@QuantidadeParcela,@DataPrimeiraParcela,@DataHora,@Valor,@CodigoMovimentacaoCategoria,@Descricao,@DataUltimaParcela)", p);
+                conn.Execute("insert into Parcelamento (Codigo,DataDaCompra,QuantidadeParcela,DataPrimeiraParcela,DataHora,Valor,CodigoMovimentacaoCategoria,Descricao,DataUltimaParcela) values (@Codigo,@DataDaCompra,@QuantidadeParcela,@DataPrimeiraParcela,@DataHora,@Valor,@CodigoMovimentacaoCategoria,@Descricao,@DataUltimaParcela)", p);
 
                 for (int i = 0; i < model.QuantidadeParcela; i++)
                 {
@@ -82,16 +126,13 @@ namespace ControleFinanceiro.Services
 
         public void AbrirTransacaoParaAtualizarParcelamento(ParcelamentoEdicaoViewModel model)
         {
-            var parcelamentoEdicao = ObterParcelamentos(model.Codigo).First();
+            using (TransactionScope scope = new())
+            {
+                var parcelamentoEdicao = Obter(model.Codigo).First();
+                DateOnly dataDaParcela = model.CodigoCartaoDeCredito is null ? model.DataDaCompra : _cartaoDeCreditoService.ObterDataDaParcela(model.CodigoCartaoDeCredito.Value, model.DataDaCompra);
 
-
-        }
-
-        public List<Parcelamento> ObterParcelamentos(Guid? codigo = null)
-        {
-            using var conn = new SqlConnection(ConnectionString);
-            return conn.Query<Parcelamento>("SELECT * FROM Parcelamento WHERE Codigo = ISNULL(@Codigo,Codigo) ORDER BY DataHora DESC", new { @Codigo = codigo }).ToList();
-
+                scope.Complete();
+            }
         }
 
         public void EditarParcelamento(Parcelamento parcelamento)
