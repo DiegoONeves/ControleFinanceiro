@@ -27,13 +27,27 @@
 </div>
 
 <br />
+<div class="container text-center">
+    <div class="row">
+        <div class="col">
+            <h3>Saídas <span class="badge bg-danger">@Model.ValorTotalSaida.ToString("C")</span></h3>
+        </div>
+        <div class="col">
+            <h3>Entradas <span class="badge bg-success">@Model.ValorTotalEntrada.ToString("C")</span></h3>
+        </div>
+        <div class="col">
+            <h3>Parcelamentos <span class="badge bg-warning">@Model.ValorTotalDeParcelamento.ToString("C")</span></h3>
+        </div>
+    </div>
+</div>
+<br />
 <br />
 <table class="table table-hover table-bordered">
     <thead>
-        <tr class="table-primary">
+        <tr class="table-dark">
             <td>Meio de parcelamento</td>
-            <td>Data de movimentação</td>
             <td>Data da compra</td>
+            <td>Data da movimentação</td>
             <td>Categoria</td>
             <td>Descrição</td>
             <td>Valor</td>
@@ -45,8 +59,8 @@
         {
             <tr>
                 <td>@item.MeioDeParcelamento</td>
-                <td>@item.DataMovimentacao.ToShortDateString()</td>
                 <td>@item.DataDaCompra.ToShortDateString()</td>
+                <td>@item.DataMovimentacao.ToShortDateString()</td>
                 <td>@item.Categoria</td>
                 <td>@item.Descricao</td>
                 <td class="@item.CorDoTextDeValor">@item.Valor.ToString("C")</td>
@@ -60,6 +74,41 @@
     </tbody>
 </table>
 <br />
+<br />
 
+<table class="table table-hover table-bordered">
+    <thead>
+        <tr class="table table-dark">
+            <td class="text-center" colspan="2">Movimentações por categoria</td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.TotaisPorCategoria)
+        {
+            <tr>
+                <td>@item.Categoria</td>
+                <td>@item.Valor.ToString("C")</td>
+            </tr>
+        }
+    </tbody>
+</table>
 
-@* <a asp-action="Cadastrar" class="btn btn-primary">Cadastrar</a> *@
+<br />
+<br />
+<table class="table table-hover table-bordered">
+    <thead>
+        <tr class="table table-dark">
+            <td class="text-center" colspan="2">Parcelamentos por categoria</td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.TotaisPorCategoriaParcelamentos)
+        {
+            <tr>
+                <td>@item.Categoria</td>
+                <td>@item.Valor.ToString("C")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+

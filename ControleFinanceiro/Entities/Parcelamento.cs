@@ -4,7 +4,6 @@
     {
         public Guid Codigo { get; set; }
         public Guid? CodigoCartaoDeCredito { get; set; } = null;
-        public Guid CodigoMovimentacaoTipo { get; set; }
         public Guid CodigoMovimentacaoCategoria { get; set; }
         public string Descricao { get; set; } = string.Empty;
         public decimal Valor { get; set; }
@@ -14,7 +13,6 @@
         public DateTime DataUltimaParcela { get; set; }
         public DateTime DataDaCompra { get; set; }
         public CartaoDeCredito? CartaoDeCredito { get; set; } = null;
-        public MovimentacaoTipo MovimentacaoTipo { get; set; } = new();
         public MovimentacaoCategoria MovimentacaoCategoria { get; set; } = new();
     }
 }

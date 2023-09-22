@@ -7,7 +7,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<MovimentacaoService>();
 builder.Services.AddScoped<ParcelamentoService>();
 builder.Services.AddScoped<MovimentacaoTipoService>();
-builder.Services.AddScoped<MovimentacaoCategoriaService>();
+builder.Services.AddScoped<CategoriaService>();
 builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<BandeiraCartaoService>();
 builder.Services.AddScoped<CartaoDeCreditoService>();

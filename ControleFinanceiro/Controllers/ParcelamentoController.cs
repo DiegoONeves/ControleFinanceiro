@@ -8,11 +8,11 @@ namespace ControleFinanceiro.Controllers
     public class ParcelamentoController : Controller
     {
         private readonly ParcelamentoService _service;
-        private readonly MovimentacaoCategoriaService _categoriaService;
+        private readonly CategoriaService _categoriaService;
         private readonly MovimentacaoTipoService _tipoService;
         private readonly CartaoDeCreditoService _cartaoDeCreditoService;
         public ParcelamentoController(ParcelamentoService service,
-            MovimentacaoCategoriaService categoriaService,
+            CategoriaService categoriaService,
             MovimentacaoTipoService tipoService,
             CartaoDeCreditoService cartaoDeCreditoService)
         {
@@ -59,7 +59,7 @@ namespace ControleFinanceiro.Controllers
             return View(m);
         }
 
-        [HttpPut]
+        [HttpPost]
         public IActionResult Editar(ParcelamentoEdicaoViewModel model)
         {
             if (ModelState.IsValid)
@@ -83,7 +83,7 @@ namespace ControleFinanceiro.Controllers
         }
         private List<SelectListItem> CarregarCategorias()
         {
-            return _categoriaService.Obter().Select(c => new SelectListItem()
+            return _categoriaService.SelectSQL(ativo: true).Select(c => new SelectListItem()
             {
                 Text = $"{c.Descricao}",
                 Value = c.Codigo.ToString()

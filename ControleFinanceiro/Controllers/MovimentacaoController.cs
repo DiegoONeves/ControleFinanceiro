@@ -8,11 +8,11 @@ namespace ControleFinanceiro.Controllers
     public class MovimentacaoController : Controller
     {
         private readonly MovimentacaoService _service;
-        private readonly MovimentacaoCategoriaService _categoriaService;
+        private readonly CategoriaService _categoriaService;
         private readonly MovimentacaoTipoService _tipoService;
         private readonly CartaoDeCreditoService _cartaoDeCreditoService;
         public MovimentacaoController(MovimentacaoService service, 
-            MovimentacaoCategoriaService categoriaService, 
+            CategoriaService categoriaService, 
             MovimentacaoTipoService tipoService,
             CartaoDeCreditoService cartaoDeCreditoService)
         {
@@ -91,7 +91,7 @@ namespace ControleFinanceiro.Controllers
                 Value = c.Codigo.ToString()
             }).ToList();
 
-            model.Categorias = _categoriaService.Obter().Select(c => new SelectListItem()
+            model.Categorias = _categoriaService.SelectSQL(ativo:true).Select(c => new SelectListItem()
             {
                 Text = $"{c.Descricao}",
                 Value = c.Codigo.ToString()

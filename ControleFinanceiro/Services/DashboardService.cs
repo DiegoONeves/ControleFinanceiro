@@ -18,7 +18,7 @@ namespace ControleFinanceiro.Services
         {
             DashBoardViewModel r = new();
 
-            var m = _movimentacaoService.Obter(codigoTipo: _movimentacaoTipoService.ObterSaida().Codigo, dataMaiorOuIgualA: DateTime.Now);
+            var m = _movimentacaoService.SelectSQL(codigoTipo: _movimentacaoTipoService.ObterSaida().Codigo, dataMaiorOuIgualA: DateTime.Now);
             r.DividaTotal = m.Select(x => x.Valor).Sum();
             var categorias = m.Select(x => x.MovimentacaoCategoria.Descricao).Distinct();
 
