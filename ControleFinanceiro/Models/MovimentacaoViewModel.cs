@@ -10,7 +10,8 @@ namespace ControleFinanceiro.Models
         public decimal Valor { get; set; } = 0;
         public decimal ValorTotalSaida { get; set; } = 0;
         public decimal ValorTotalEntrada { get; set; } = 0;
-        public decimal ValorTotalDeParcelamento { get; set; } = 0; 
+        public decimal ValorTotalDeParcelamento { get; set; } = 0;
+        public decimal ValorAmortizadoNoMes { get; set; } = 0;
         public IEnumerable<MovimentacaoItemViewModel> Movimentacoes { get; set; }
 
         public List<DashboardDividaPorCategoriaViewModel> TotaisPorCategoria { get; set; } = new();

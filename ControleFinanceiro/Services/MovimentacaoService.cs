@@ -91,7 +91,7 @@ namespace ControleFinanceiro.Services
             resultado.ValorTotalEntrada = movimentacoes.Where(x => x.Valor > 0).Select(x => x.Valor).Sum();
             resultado.ValorTotalDeParcelamento = movimentacoes.Where(x => x.Valor < 0 && x.CodigoParcelamento is not null).Select(x => x.Valor).Sum();
 
-            resultado.Valor = resultado.Movimentacoes.Select(x => x.Valor).Sum();
+            resultado.Valor = movimentacoes.Select(x => x.Valor).Sum();
 
             var categorias = movimentacoes.Where(x => x.MovimentacaoTipo.Descricao == "Saída").Select(x => x.MovimentacaoCategoria.Descricao).Distinct();
 
@@ -104,7 +104,8 @@ namespace ControleFinanceiro.Services
                 });
             }
 
-            var categoriasParcelamentos = movimentacoes.Where(x => x.CodigoParcelamento is not null && x.MovimentacaoTipo.Descricao == "Saída").Select(x => x.MovimentacaoCategoria.Descricao).Distinct();
+            var categoriasParcelamentos = movimentacoes.Where(x => x.CodigoParcelamento is not null && x.MovimentacaoTipo.Descricao == "Saída")
+                .Select(x => x.MovimentacaoCategoria.Descricao).Distinct();
 
             foreach (var item in categoriasParcelamentos)
             {
@@ -117,6 +118,8 @@ namespace ControleFinanceiro.Services
 
             resultado.TotaisPorCategoria = resultado.TotaisPorCategoria.OrderBy(x => x.Valor).ToList();
             resultado.TotaisPorCategoriaParcelamentos = resultado.TotaisPorCategoriaParcelamentos.OrderBy(x => x.Valor).ToList();
+            resultado.ValorAmortizadoNoMes = resultado.Movimentacoes.Where(x => x.UltimaParcela).Select(x => x.Valor).Sum();
+
             return resultado;
         }
 
@@ -125,6 +128,11 @@ namespace ControleFinanceiro.Services
         {
             foreach (var item in movimentacoes)
             {
+
+                decimal valorAmortizacao = 0;
+                if (item.CodigoParcelamento is not null)
+                    valorAmortizacao = GerarValorAmortizacao(item);
+
                 yield return new MovimentacaoItemViewModel
                 {
                     Codigo = item.Codigo,
@@ -135,13 +143,15 @@ namespace ControleFinanceiro.Services
                     DataDaCompra = item.DataDaCompra,
                     DataMovimentacao = item.DataMovimentacao,
                     Descricao = item.Descricao,
-                    Valor = item.Valor
+                    Valor = item.Valor,
+                    Baixado = item.Baixado,
+                    UltimaParcela = valorAmortizacao < 0
                 };
             }
         }
 
 
-       
+
 
         public void AbrirTransacaoParaAtualizarMovimentacao(MovimentacaoEdicaoViewModel model)
         {
@@ -212,6 +222,21 @@ namespace ControleFinanceiro.Services
             };
         }
 
+        public decimal GerarValorAmortizacao(Movimentacao parcela)
+        {
+            var valorRestanteDoParcelamento = SelectSQL(
+                codigosParcelamentos: new List<Guid> { parcela.CodigoParcelamento.Value },
+                dataMaiorQue: parcela.DataMovimentacao,
+                baixado: false)
+                .Select(x => x.Valor)
+                .Sum();
+
+            if (valorRestanteDoParcelamento == 0 && parcela.Valor < 0)
+                return parcela.Valor;
+
+            return 0;
+        }
+
         #region Crud
 
         public List<Movimentacao> SelectSQL(
@@ -219,29 +244,43 @@ namespace ControleFinanceiro.Services
            Guid? codigoTipo = null,
            Guid? codigoCategoria = null,
            DateTime? dataMaiorOuIgualA = null,
+           DateTime? dataMaiorQue = null,
            bool somenteParcelamentos = false,
            short? mes = null,
-           short? ano = null)
+           short? ano = null,
+           bool? baixado = null,
+           List<Guid>? codigosParcelamentos = null)
         {
             StringBuilder sql = new();
-            sql.AppendLine("SELECT A.*,B.*,C.*,D.*,E.* FROM Movimentacao A (NOLOCK) ");
-            sql.AppendLine("INNER JOIN MovimentacaoCategoria B (NOLOCK) ON A.CodigoMovimentacaoCategoria = B.Codigo ");
-            sql.AppendLine("INNER JOIN MovimentacaoTipo C (NOLOCK) ON A.CodigoMovimentacaoTipo = C.Codigo ");
-            sql.AppendLine("LEFT JOIN CartaoDeCredito D (NOLOCK) ON A.CodigoCartaoDeCredito = D.Codigo ");
-            sql.AppendLine("LEFT JOIN BandeiraCartao E (NOLOCK) ON D.CodigoBandeiraCartao = E.Codigo ");
-            sql.AppendLine("WHERE A.Codigo = ISNULL(@Codigo,A.Codigo) ");
-            sql.AppendLine("AND A.CodigoMovimentacaoTipo = ISNULL(@CodigoMovimentacaoTipo,A.CodigoMovimentacaoTipo) ");
-            sql.AppendLine("AND A.CodigoMovimentacaoCategoria = ISNULL(@CodigoMovimentacaoCategoria,A.CodigoMovimentacaoCategoria)  ");
-            sql.AppendLine("AND A.DataMovimentacao >= ISNULL(@DataMaiorOuIgualA,A.DataMovimentacao) ");
+            sql.AppendLine("SELECT A.*,B.*,C.*,D.*,E.* FROM Movimentacao A (NOLOCK)");
+            sql.AppendLine("INNER JOIN MovimentacaoCategoria B (NOLOCK) ON A.CodigoMovimentacaoCategoria = B.Codigo");
+            sql.AppendLine("INNER JOIN MovimentacaoTipo C (NOLOCK) ON A.CodigoMovimentacaoTipo = C.Codigo");
+            sql.AppendLine("LEFT JOIN CartaoDeCredito D (NOLOCK) ON A.CodigoCartaoDeCredito = D.Codigo");
+            sql.AppendLine("LEFT JOIN BandeiraCartao E (NOLOCK) ON D.CodigoBandeiraCartao = E.Codigo");
+            sql.AppendLine("WHERE A.Codigo = ISNULL(@Codigo,A.Codigo)");
+            sql.AppendLine("AND A.CodigoMovimentacaoTipo = ISNULL(@CodigoMovimentacaoTipo,A.CodigoMovimentacaoTipo)");
+            sql.AppendLine("AND A.CodigoMovimentacaoCategoria = ISNULL(@CodigoMovimentacaoCategoria,A.CodigoMovimentacaoCategoria)");
+
+            if (dataMaiorOuIgualA is not null)
+                sql.AppendLine("AND A.DataMovimentacao >= @DataMaiorOuIgualA");
+
+            if (dataMaiorQue is not null)
+                sql.AppendLine("AND A.DataMovimentacao > @dataMaiorQue");
 
             if (somenteParcelamentos)
                 sql.AppendLine("AND A.CodigoParcelamento IS NOT NULL");
 
             if (mes is not null)
-                sql.AppendLine("AND MONTH(A.DataMovimentacao) = ISNULL(@Mes,MONTH(A.DataMovimentacao))");
+                sql.AppendLine("AND MONTH(A.DataMovimentacao) = @Mes");
 
             if (ano is not null)
-                sql.AppendLine("AND YEAR(A.DataMovimentacao) = ISNULL(@Ano,YEAR(A.DataMovimentacao))");
+                sql.AppendLine("AND YEAR(A.DataMovimentacao) = @Ano");
+
+            if (baixado is not null)
+                sql.AppendLine("AND A.Baixado = A.Baixado");
+
+            if (codigosParcelamentos is not null)
+                sql.AppendLine("AND A.CodigoParcelamento IN @CodigosParcelamentos");
 
             sql.AppendLine("ORDER BY A.DataMovimentacao DESC");
 
@@ -267,7 +306,10 @@ namespace ControleFinanceiro.Services
                     @CodigoMovimentacaoCategoria = codigoCategoria,
                     @DataMaiorOuIgualA = dataMaiorOuIgualA,
                     @Mes = mes,
-                    @Ano = ano
+                    @Ano = ano,
+                    @Baixado = baixado,
+                    @dataMaiorQue = dataMaiorQue,
+                    @CodigosParcelamentos = codigosParcelamentos
                 }, splitOn: "Codigo").ToList();
 
         }

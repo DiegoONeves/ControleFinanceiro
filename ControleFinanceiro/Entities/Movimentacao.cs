@@ -12,9 +12,11 @@
         public DateTime DataMovimentacao { get; set; }
         public DateTime DataHora { get; set; }
         public DateTime DataDaCompra { get; set; }
+        public bool Baixado { get; set; } = false;
         public MovimentacaoCategoria MovimentacaoCategoria { get; set; } = new();
         public MovimentacaoTipo MovimentacaoTipo { get; set; } = new();
         public CartaoDeCredito? CartaoDeCredito { get; set; } = null;
+        public Parcelamento Parcelamento { get; set; } = null;
 
         public override string ToString()
         {

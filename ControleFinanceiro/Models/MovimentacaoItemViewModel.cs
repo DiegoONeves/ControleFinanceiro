@@ -11,5 +11,7 @@
         public string CorDoTextDeValor { get; set; } = string.Empty;
         public string MeioDeParcelamento { get; set; } = string.Empty;
         public DateTime DataDaCompra { get; set; }
+        public bool Baixado { get; set; }
+        public bool UltimaParcela { get; set; } = false;
     }
 }

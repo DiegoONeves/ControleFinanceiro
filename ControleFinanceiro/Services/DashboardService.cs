@@ -18,16 +18,16 @@ namespace ControleFinanceiro.Services
         {
             DashBoardViewModel r = new();
 
-            var m = _movimentacaoService.SelectSQL(codigoTipo: _movimentacaoTipoService.ObterSaida().Codigo, dataMaiorOuIgualA: DateTime.Now);
-            r.DividaTotal = m.Select(x => x.Valor).Sum();
-            var categorias = m.Select(x => x.MovimentacaoCategoria.Descricao).Distinct();
+            var movimentacoesFuturas = _movimentacaoService.SelectSQL(codigoTipo: _movimentacaoTipoService.ObterSaida().Codigo, dataMaiorOuIgualA: DateTime.Now, baixado: false);
+            r.DividaTotal = movimentacoesFuturas.Select(x => x.Valor).Sum();
+            var categorias = movimentacoesFuturas.Select(x => x.MovimentacaoCategoria.Descricao).Distinct();
 
             foreach (var item in categorias)
             {
                 r.DividaPorCategoria.Add(new DashboardDividaPorCategoriaViewModel
                 {
                     Categoria = item,
-                    Valor = m.Where(x => x.MovimentacaoCategoria.Descricao == item).Select(x => x.Valor).Sum()
+                    Valor = movimentacoesFuturas.Where(x => x.MovimentacaoCategoria.Descricao == item).Select(x => x.Valor).Sum()
                 });
             }
             r.DividaPorCategoria = r.DividaPorCategoria.OrderBy(x => x.Valor).ToList();
