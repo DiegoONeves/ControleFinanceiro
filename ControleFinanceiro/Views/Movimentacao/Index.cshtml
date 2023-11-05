@@ -12,7 +12,7 @@
             <input class="btn btn-secondary" type="submit" value="Anterior" asp-for="Direcao">
         </div>
         <div class="col-auto">
-            <input readonly asp-for="Periodo" class="form-control">
+            <input asp-for="Periodo" class="form-control">
         </div>
         <div class="col-auto">
             <input class="btn btn-secondary" type="submit" value="Próxima" asp-for="Direcao">
@@ -57,7 +57,6 @@
     <thead>
         <tr class="table-dark">
             <td>Data da compra</td>
-            <td>Data da movimentação</td>
             <td>Categoria</td>
             <td>Descrição</td>
             <td>Valor</td>
@@ -69,7 +68,6 @@
         {
             <tr class="@(item.UltimaParcela?"table-success": item.Baixado?"table-secondary": "")">
                 <td>@item.DataDaCompra.ToShortDateString()</td>
-                <td>@item.DataMovimentacao.ToShortDateString()</td>
                 <td>@item.Categoria</td>
                 <td>@item.Descricao @(item.Prioritaria ? "(Prioridade)" : "")</td>
                 <td class="@item.CorDoTextDeValor">@item.Valor.ToString("C")</td>
@@ -78,7 +76,7 @@
             </tr>
         }
         <tr class="table table-dark">
-            <td colspan="5">Total</td>
+            <td colspan="4">Total</td>
             <td colspan="2">@Model.Valor.ToString("C")</td>
         </tr>
     </tbody>

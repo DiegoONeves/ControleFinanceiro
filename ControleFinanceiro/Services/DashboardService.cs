@@ -30,7 +30,7 @@ namespace ControleFinanceiro.Services
                     Valor = movimentacoesFuturas.Where( x => x.MovimentacaoCategoria.Descricao == item).Select(x => x.Valor).Sum()
                 });
             }
-            r.DividaPorCategoria = r.DividaPorCategoria.OrderBy(x => x.Valor).ToList();
+            r.DividaPorCategoria = r.DividaPorCategoria.OrderBy(x => x.Valor).Take(5).ToList();
 
             return r;
         }
