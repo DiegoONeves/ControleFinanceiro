@@ -23,11 +23,13 @@ namespace ControleFinanceiro.Services
             _cartaoDeCreditoService = cartaoDeCreditoService;
         }
 
-        public IEnumerable<ParcelamentoViewModel> ObterParaListar()
+        public List<ParcelamentoViewModel> ObterParaListar()
         {
-            foreach (var item in SelectSQL())
+            List<ParcelamentoViewModel> parcelamentosTemp = new();
+            List<ParcelamentoViewModel> parcelamentosFinal = new();
+            foreach (var item in SelectSQL().OrderByDescending(x => x.DataDaCompra))
             {
-                yield return new ParcelamentoViewModel
+                parcelamentosTemp.Add(new ParcelamentoViewModel
                 {
                     Codigo = item.Codigo,
                     Categoria = item.MovimentacaoCategoria.Descricao,
@@ -39,9 +41,15 @@ namespace ControleFinanceiro.Services
                     DataUltimaParcela = item.DataUltimaParcela,
                     QuantidadeParcela = item.QuantidadeParcela,
                     Valor = item.Valor,
+                    Finalizado = item.DataUltimaParcela <= DateTime.Now,
                     MeioDeParcelamento = item.CodigoCartaoDeCredito is null ? "Outro" : $"Crédito/{item?.CartaoDeCredito?.BandeiraCartao.Descricao}/{item?.CartaoDeCredito?.NumeroCartao.Substring(12, 4)}/{((item?.CartaoDeCredito?.Virtual ?? false) ? "Virtual" : "Físico")}"
-                };
+                });
             }
+
+            parcelamentosFinal.AddRange(parcelamentosTemp.Where(x => !x.Finalizado));
+            parcelamentosFinal.AddRange(parcelamentosTemp.Where(x => x.Finalizado));
+
+            return parcelamentosFinal;
         }
 
         public ParcelamentoEdicaoViewModel ObterParaEditar(Guid codigo)
@@ -53,6 +61,7 @@ namespace ControleFinanceiro.Services
             r.CodigoCartaoDeCredito = resultado.CodigoCartaoDeCredito;
             r.Codigo = resultado.Codigo;
             r.Valor = resultado.Valor;
+            r.Prioritaria = resultado.ContaPrioritaria;
             r.CodigoMovimentacaoCategoria = resultado.CodigoMovimentacaoCategoria;
             r.Descricao = resultado.Descricao;
             r.QuantidadeParcela = resultado.QuantidadeParcela;
@@ -76,6 +85,7 @@ namespace ControleFinanceiro.Services
                     DataPrimeiraParcela = dataPrimeiraParcela,
                     DataUltimaParcela = dataPrimeiraParcela.AddMonths(model.QuantidadeParcela - 1),
                     Valor = model.Valor,
+                    ContaPrioritaria = model.Prioritaria,
                     DataHora = DateTime.Now
                 };
                 InsertSQL(p);
@@ -125,6 +135,7 @@ namespace ControleFinanceiro.Services
             parcelamentoEdicao.DataUltimaParcela = dataPrimeiraParcela.AddMonths(model.QuantidadeParcela - 1);
             parcelamentoEdicao.QuantidadeParcela = model.QuantidadeParcela;
             parcelamentoEdicao.DataDaCompra = dataDaCompra;
+            parcelamentoEdicao.ContaPrioritaria = model.Prioritaria;
 
             //edito o parcelamento
             UpdateSQL(parcelamentoEdicao);
@@ -145,6 +156,7 @@ namespace ControleFinanceiro.Services
             StringBuilder sql = new();
             sql.AppendLine(@"UPDATE Parcelamento");
             sql.AppendLine("SET CodigoMovimentacaoCategoria = @CodigoMovimentacaoCategoria,");
+            sql.AppendLine("ContaPrioritaria = @ContaPrioritaria,");
             sql.AppendLine("Descricao = @Descricao,");
             sql.AppendLine("QuantidadeParcela = @QuantidadeParcela,");
             sql.AppendLine("DataPrimeiraParcela = @DataPrimeiraParcela,");
@@ -184,7 +196,7 @@ namespace ControleFinanceiro.Services
         public void InsertSQL(Parcelamento p)
         {
             using var conn = new SqlConnection(ConnectionString);
-            conn.Execute("insert into Parcelamento (Codigo,DataDaCompra,QuantidadeParcela,DataPrimeiraParcela,DataHora,Valor,CodigoMovimentacaoCategoria,Descricao,DataUltimaParcela) values (@Codigo,@DataDaCompra,@QuantidadeParcela,@DataPrimeiraParcela,@DataHora,@Valor,@CodigoMovimentacaoCategoria,@Descricao,@DataUltimaParcela)", p);
+            conn.Execute("insert into Parcelamento (ContaPrioritaria,Codigo,DataDaCompra,QuantidadeParcela,DataPrimeiraParcela,DataHora,Valor,CodigoMovimentacaoCategoria,Descricao,DataUltimaParcela) values (@ContaPrioritaria,@Codigo,@DataDaCompra,@QuantidadeParcela,@DataPrimeiraParcela,@DataHora,@Valor,@CodigoMovimentacaoCategoria,@Descricao,@DataUltimaParcela)", p);
         }
 
         public void DeleteSQL(Guid codigo)

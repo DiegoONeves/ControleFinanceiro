@@ -83,7 +83,7 @@ namespace ControleFinanceiro.Controllers
         }
         private List<SelectListItem> CarregarCategorias()
         {
-            return _categoriaService.SelectSQL(ativo: true).Select(c => new SelectListItem()
+            return _categoriaService.SelectSQL(ativo: true).OrderBy(x => x.Descricao).Select(c => new SelectListItem()
             {
                 Text = $"{c.Descricao}",
                 Value = c.Codigo.ToString()

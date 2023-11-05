@@ -13,5 +13,6 @@
         public DateTime DataDaCompra { get; set; }
         public bool Baixado { get; set; }
         public bool UltimaParcela { get; set; } = false;
+        public bool Prioritaria { get; set; }
     }
 }

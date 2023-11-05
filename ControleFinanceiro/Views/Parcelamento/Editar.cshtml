@@ -25,6 +25,12 @@
         <span asp-validation-for="CodigoCartaoDeCredito" class="text-danger"></span>
     </div>
     <div class="mb-2">
+        <div class="form-check">
+            <label asp-for="Prioritaria" class="form-check-label"></label>
+            <input asp-for="Prioritaria" class="form-check-input" />
+        </div>
+    </div>
+    <div class="mb-2">
         <label asp-for="Descricao" class="control-label"></label>
         <input asp-for="Descricao" class="form-control" />
         <span asp-validation-for="Descricao" class="text-danger"></span>

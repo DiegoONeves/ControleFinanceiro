@@ -33,5 +33,8 @@ namespace ControleFinanceiro.Models
         public DateOnly DataPrimeiraParcela { get; set; }
         [Display(Name = "Data da última parcela")]
         public DateOnly DataUltimaParcela { get; set; }
+
+        [Display(Name = "Prioritária")]
+        public bool Prioritaria { get; set; }
     }
 }

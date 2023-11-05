@@ -34,5 +34,8 @@ namespace ControleFinanceiro.Models
         public DateOnly DataMovimentacao { get; set; }
         public bool EstadoDoCampoCodigoCartapDeCredito { get; set; }
 
+        [Display(Name = "Prioritária")]
+        public bool Prioritaria { get; set; }
+
     }
 }

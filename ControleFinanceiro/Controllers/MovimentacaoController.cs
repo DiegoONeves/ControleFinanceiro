@@ -11,8 +11,8 @@ namespace ControleFinanceiro.Controllers
         private readonly CategoriaService _categoriaService;
         private readonly MovimentacaoTipoService _tipoService;
         private readonly CartaoDeCreditoService _cartaoDeCreditoService;
-        public MovimentacaoController(MovimentacaoService service, 
-            CategoriaService categoriaService, 
+        public MovimentacaoController(MovimentacaoService service,
+            CategoriaService categoriaService,
             MovimentacaoTipoService tipoService,
             CartaoDeCreditoService cartaoDeCreditoService)
         {
@@ -83,6 +83,14 @@ namespace ControleFinanceiro.Controllers
             return View(model);
         }
 
+        [HttpGet]
+        [Route("/{controller}/{action}/{codigo}")]
+        public IActionResult BaixarOuReverter(Guid codigo)
+        {
+            _service.BaixarOuReverter(codigo);
+            return RedirectToAction("Index");
+        }
+
         private void CarregarListagens(dynamic model)
         {
             model.Tipos = _tipoService.Obter().Select(c => new SelectListItem()
@@ -91,7 +99,7 @@ namespace ControleFinanceiro.Controllers
                 Value = c.Codigo.ToString()
             }).ToList();
 
-            model.Categorias = _categoriaService.SelectSQL(ativo:true).Select(c => new SelectListItem()
+            model.Categorias = _categoriaService.SelectSQL(ativo: true).OrderBy(x => x.Descricao).Select(c => new SelectListItem()
             {
                 Text = $"{c.Descricao}",
                 Value = c.Codigo.ToString()

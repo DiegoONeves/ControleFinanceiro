@@ -14,5 +14,6 @@
         public DateTime DataDaCompra { get; set; }
         public CartaoDeCredito? CartaoDeCredito { get; set; } = null;
         public MovimentacaoCategoria MovimentacaoCategoria { get; set; } = new();
+        public bool ContaPrioritaria { get; set; } = false;
     }
 }

@@ -17,6 +17,7 @@
         public MovimentacaoTipo MovimentacaoTipo { get; set; } = new();
         public CartaoDeCredito? CartaoDeCredito { get; set; } = null;
         public Parcelamento Parcelamento { get; set; } = null;
+        public bool ContaPrioritaria { get; set; } = false;
 
         public override string ToString()
         {

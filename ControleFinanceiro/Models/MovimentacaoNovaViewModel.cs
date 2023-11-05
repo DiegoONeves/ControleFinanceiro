@@ -32,6 +32,8 @@ namespace ControleFinanceiro.Models
         public DateOnly DataMovimentacao { get; set; }
 
         public Guid? CodigoParcelamento { get; set; }
+        [Display(Name = "Prioritária")]
+        public bool Prioritaria { get; set; }
 
     }
 }

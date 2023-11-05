@@ -18,7 +18,7 @@ namespace ControleFinanceiro.Services
         {
             DashBoardViewModel r = new();
 
-            var movimentacoesFuturas = _movimentacaoService.SelectSQL(codigoTipo: _movimentacaoTipoService.ObterSaida().Codigo, dataMaiorOuIgualA: DateTime.Now, baixado: false);
+            var movimentacoesFuturas = _movimentacaoService.SelectSQL(codigoTipo: _movimentacaoTipoService.ObterSaida().Codigo, dataMaiorOuIgualA: DateTime.Now, baixado: false, somenteParcelamentos: true);
             r.DividaTotal = movimentacoesFuturas.Select(x => x.Valor).Sum();
             var categorias = movimentacoesFuturas.Select(x => x.MovimentacaoCategoria.Descricao).Distinct();
 
@@ -27,7 +27,7 @@ namespace ControleFinanceiro.Services
                 r.DividaPorCategoria.Add(new DashboardDividaPorCategoriaViewModel
                 {
                     Categoria = item,
-                    Valor = movimentacoesFuturas.Where(x => x.MovimentacaoCategoria.Descricao == item).Select(x => x.Valor).Sum()
+                    Valor = movimentacoesFuturas.Where( x => x.MovimentacaoCategoria.Descricao == item).Select(x => x.Valor).Sum()
                 });
             }
             r.DividaPorCategoria = r.DividaPorCategoria.OrderBy(x => x.Valor).ToList();
