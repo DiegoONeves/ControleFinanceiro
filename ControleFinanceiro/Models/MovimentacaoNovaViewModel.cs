@@ -5,7 +5,7 @@ namespace ControleFinanceiro.Models
 {
     public class MovimentacaoNovaViewModel
     {
-        public List<SelectListItem> CartoesDeCredito { get; set; } = new();
+        public List<SelectListItem> CartoesDePagamento { get; set; } = new();
         public List<SelectListItem> Tipos { get; set; } = new();
         public List<SelectListItem> Categorias { get; set; } = new();
 
@@ -17,8 +17,8 @@ namespace ControleFinanceiro.Models
         [Required(ErrorMessage = "O campo {0} é obrigatório")]
         public Guid CodigoMovimentacaoCategoria { get; set; }
 
-        [Display(Name = "Cartão de crédito")]
-        public Guid? CodigoCartaoDeCredito { get; set; } = null;
+        [Display(Name = "Cartão de pagamento")]
+        public Guid? CodigoCartao { get; set; } = null;
 
         [Display(Name = "Descrição da movimentação")]
         public string Descricao { get; set; } = string.Empty;
@@ -32,8 +32,8 @@ namespace ControleFinanceiro.Models
         public DateOnly DataMovimentacao { get; set; }
 
         public Guid? CodigoParcelamento { get; set; }
-        [Display(Name = "Prioritária")]
-        public bool Prioritaria { get; set; }
+        [Display(Name = "Essencial")]
+        public bool Essencial { get; set; }
 
     }
 }

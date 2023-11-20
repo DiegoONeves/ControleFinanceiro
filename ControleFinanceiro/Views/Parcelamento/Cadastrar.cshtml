@@ -17,11 +17,11 @@
         <span asp-validation-for="CodigoMovimentacaoCategoria" class="text-danger"></span>
     </div>
     <div class="mb-2">
-        <label asp-for="CodigoCartaoDeCredito" class="control-label"></label>
-        <select asp-for="CodigoCartaoDeCredito" class="form-control" asp-items="@Model.CartoesDeCredito">
-            <option selected value="">Selecione um cartão de crédito</option>
+        <label asp-for="CodigoCartao" class="control-label"></label>
+        <select asp-for="CodigoCartao" class="form-control" asp-items="@Model.CartoesDePagamento">
+            <option selected value="">Selecione um cartão de pagamento</option>
         </select>
-        <span asp-validation-for="CodigoCartaoDeCredito" class="text-danger"></span>
+        <span asp-validation-for="CodigoCartao" class="text-danger"></span>
     </div>
     <div class="mb-2">
         <label asp-for="Descricao" class="control-label"></label>
@@ -30,8 +30,8 @@
     </div>
     <div class="mb-2">
         <div class="form-check">
-            <label asp-for="Prioritaria" class="form-check-label"></label>
-            <input asp-for="Prioritaria" class="form-check-input" />
+            <label asp-for="Essencial" class="form-check-label"></label>
+            <input asp-for="Essencial" class="form-check-input" />
         </div>
     </div>
     <div class="mb-2">

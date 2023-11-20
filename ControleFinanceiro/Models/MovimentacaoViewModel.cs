@@ -12,8 +12,8 @@ namespace ControleFinanceiro.Models
         public decimal ValorTotalEntrada { get; set; } = 0;
         public decimal ValorTotalDeParcelamento { get; set; } = 0;
         public decimal ValorAmortizadoNoMes { get; set; } = 0;
-        public decimal ValorContasNaoPrioritarias { get; set; } = 0;
-        public decimal ValorContasPrioritarias { get; set; } = 0;
+        public decimal ValorContasNaoEssenciais { get; set; } = 0;
+        public decimal ValorContasEssenciais { get; set; } = 0;
         public IEnumerable<MovimentacaoItemViewModel> Movimentacoes { get; set; }
 
         public List<DashboardDividaPorCategoriaViewModel> TotaisPorCategoria { get; set; } = new();

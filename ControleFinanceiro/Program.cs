@@ -9,8 +9,8 @@ builder.Services.AddScoped<ParcelamentoService>();
 builder.Services.AddScoped<MovimentacaoTipoService>();
 builder.Services.AddScoped<CategoriaService>();
 builder.Services.AddScoped<DashboardService>();
-builder.Services.AddScoped<BandeiraCartaoService>();
-builder.Services.AddScoped<CartaoDeCreditoService>();
+builder.Services.AddScoped<CartaoBandeiraService>();
+builder.Services.AddScoped<CartaoService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

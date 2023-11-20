@@ -3,7 +3,7 @@
     public class Movimentacao
     {
         public Guid Codigo { get; set; }
-        public Guid? CodigoCartaoDeCredito { get; set; } = null;
+        public Guid? CodigoCartao { get; set; } = null;
         public Guid? CodigoParcelamento { get; set; }
         public Guid CodigoMovimentacaoTipo { get; set; }
         public Guid CodigoMovimentacaoCategoria { get; set; }
@@ -15,9 +15,9 @@
         public bool Baixado { get; set; } = false;
         public MovimentacaoCategoria MovimentacaoCategoria { get; set; } = new();
         public MovimentacaoTipo MovimentacaoTipo { get; set; } = new();
-        public CartaoDeCredito? CartaoDeCredito { get; set; } = null;
+        public Cartao? Cartao { get; set; } = null;
         public Parcelamento Parcelamento { get; set; } = null;
-        public bool ContaPrioritaria { get; set; } = false;
+        public bool Essencial { get; set; } = false;
 
         public override string ToString()
         {

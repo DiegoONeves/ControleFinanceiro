@@ -10,16 +10,16 @@ namespace ControleFinanceiro.Controllers
         private readonly ParcelamentoService _service;
         private readonly CategoriaService _categoriaService;
         private readonly MovimentacaoTipoService _tipoService;
-        private readonly CartaoDeCreditoService _cartaoDeCreditoService;
+        private readonly CartaoService _cartaoService;
         public ParcelamentoController(ParcelamentoService service,
             CategoriaService categoriaService,
             MovimentacaoTipoService tipoService,
-            CartaoDeCreditoService cartaoDeCreditoService)
+            CartaoService cartaoService)
         {
             _service = service;
             _tipoService = tipoService;
             _categoriaService = categoriaService;
-            _cartaoDeCreditoService = cartaoDeCreditoService;
+            _cartaoService = cartaoService;
         }
         public IActionResult Index()
         {
@@ -73,27 +73,27 @@ namespace ControleFinanceiro.Controllers
 
         private void CarregarListagensNovo(ParcelamentoNovoViewModel model)
         {
-            model.Categorias = CarregarCategorias();
-            model.CartoesDeCredito = CarregarCartoesDeCredito();
+            model.Categorias = CarregarCategorias(ativo: true);
+            model.CartoesDePagamento = CarregarCartoesDePagamento(ativo: true);
         }
         private void CarregarListagensEdicao(ParcelamentoEdicaoViewModel model)
         {
             model.Categorias = CarregarCategorias();
-            model.CartoesDeCredito = CarregarCartoesDeCredito();
+            model.CartoesDePagamento = CarregarCartoesDePagamento();
         }
-        private List<SelectListItem> CarregarCategorias()
+        private List<SelectListItem> CarregarCategorias(bool? ativo = null)
         {
-            return _categoriaService.SelectSQL(ativo: true).OrderBy(x => x.Descricao).Select(c => new SelectListItem()
+            return _categoriaService.SelectSQL(ativo: ativo).OrderBy(x => x.Descricao).Select(c => new SelectListItem()
             {
                 Text = $"{c.Descricao}",
                 Value = c.Codigo.ToString()
             }).ToList();
         }
-        private List<SelectListItem> CarregarCartoesDeCredito()
+        private List<SelectListItem> CarregarCartoesDePagamento(bool? ativo = null)
         {
-            return _cartaoDeCreditoService.Obter().Select(c => new SelectListItem()
+            return _cartaoService.Obter(ativo: ativo).Select(c => new SelectListItem()
             {
-                Text = $"Crédito/{c.BandeiraCartao.Descricao}/{c.NumeroCartao.Substring(12, 4)}/{(c.Virtual ? "Virtual" : "Físico")}",
+                Text = CommonHelper.FormatarDescricaoCartao(c),
                 Value = c.Codigo.ToString()
             }).ToList();
         }

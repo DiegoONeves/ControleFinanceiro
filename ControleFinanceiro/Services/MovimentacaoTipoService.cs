@@ -1,4 +1,5 @@
 ﻿using ControleFinanceiro.Entities;
+using ControleFinanceiro.ValueObjects;
 using Dapper;
 using System.Data.SqlClient;
 
@@ -12,8 +13,8 @@ namespace ControleFinanceiro.Services
 
         }
 
-        public MovimentacaoTipo ObterEntrada() => Obter().First(x => x.Descricao == "Entrada");
-        public MovimentacaoTipo ObterSaida() => Obter().First(x => x.Descricao == "Saída");
+        public MovimentacaoTipo ObterEntrada() => Obter().First(x => x.Descricao == TipoDeMovimentacao.Entrada);
+        public MovimentacaoTipo ObterSaida() => Obter().First(x => x.Descricao == TipoDeMovimentacao.Saida);
 
         public List<MovimentacaoTipo> Obter(Guid? codigo = null)
         {

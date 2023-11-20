@@ -1,5 +1,6 @@
 ﻿using ControleFinanceiro.Entities;
 using ControleFinanceiro.Models;
+using ControleFinanceiro.ValueObjects;
 using Dapper;
 using System.Data.SqlClient;
 using System.Text;
@@ -11,24 +12,24 @@ namespace ControleFinanceiro.Services
     {
         private readonly MovimentacaoTipoService _movimentacaoTipoService;
         private readonly CategoriaService _movimentacaoCategoriaService;
-        private readonly CartaoDeCreditoService _cartaoDeCreditoService;
+        private readonly CartaoService _CartaoService;
 
         public MovimentacaoService(IConfiguration config,
             MovimentacaoTipoService movimentacaoTipoService,
             CategoriaService movimentacaoCategoriaService,
-            CartaoDeCreditoService cartaoDeCreditoService) : base(config)
+            CartaoService CartaoService) : base(config)
         {
             _movimentacaoTipoService = movimentacaoTipoService;
             _movimentacaoCategoriaService = movimentacaoCategoriaService;
-            _cartaoDeCreditoService = cartaoDeCreditoService;
+            _CartaoService = CartaoService;
         }
 
         public void AbrirTransacaoParaInserirNovaMovimentacao(MovimentacaoNovaViewModel model)
         {
             using TransactionScope scope = new();
             var tipo = _movimentacaoTipoService.Obter(model.CodigoMovimentacaoTipo).First();
-            model.Valor = tipo.Descricao.ToLower() != "entrada" ? model.Valor * -1 : model.Valor;
-            model.DataMovimentacao = model.CodigoCartaoDeCredito is null ? model.DataDaCompra : _cartaoDeCreditoService.ObterDataDaParcela(model.CodigoCartaoDeCredito.Value, model.DataDaCompra);
+            model.Valor = tipo.Descricao != TipoDeMovimentacao.Entrada ? model.Valor * -1 : model.Valor;
+            model.DataMovimentacao = model.CodigoCartao is null ? model.DataDaCompra : _CartaoService.ObterDataDaParcela(model.CodigoCartao.Value, model.DataDaCompra);
             InserirMovimentacao(model);
             scope.Complete();
         }
@@ -37,11 +38,11 @@ namespace ControleFinanceiro.Services
             Movimentacao movimentacao = new()
             {
                 Codigo = Guid.NewGuid(),
-                CodigoCartaoDeCredito = model.CodigoCartaoDeCredito,
+                CodigoCartao = model.CodigoCartao,
                 DataDaCompra = CommonHelper.ConverterDateOnlyParaDateTime(model.DataDaCompra),
                 CodigoParcelamento = model.CodigoParcelamento,
                 Descricao = model.Descricao,
-                ContaPrioritaria = model.Prioritaria,
+                Essencial = model.Essencial,
                 CodigoMovimentacaoCategoria = model.CodigoMovimentacaoCategoria,
                 CodigoMovimentacaoTipo = model.CodigoMovimentacaoTipo,
                 DataMovimentacao = CommonHelper.ConverterDateOnlyParaDateTime(model.DataMovimentacao),
@@ -97,19 +98,19 @@ namespace ControleFinanceiro.Services
 
             resultado.Valor = movimentacoes.Select(x => x.Valor).Sum();
 
-            var categorias = movimentacoes.Where(x => x.MovimentacaoTipo.Descricao == "Saída").Select(x => x.MovimentacaoCategoria.Descricao).Distinct();
+            var categorias = movimentacoes.Where(x => x.MovimentacaoTipo.Descricao == TipoDeMovimentacao.Saida).Select(x => x.MovimentacaoCategoria.Descricao).Distinct();
 
             foreach (var item in categorias)
             {
                 resultado.TotaisPorCategoria.Add(new DashboardDividaPorCategoriaViewModel
                 {
                     Categoria = item,
-                    Valor = movimentacoes.Where(x => x.MovimentacaoCategoria.Descricao == item).Select(x => x.Valor).Sum(),
+                    Valor = movimentacoes.Where(x => x.MovimentacaoTipo.Descricao == TipoDeMovimentacao.Saida && x.MovimentacaoCategoria.Descricao == item).Select(x => x.Valor).Sum(),
                     ValorMesAnterior = movimentacoesDoMesAnterior.Where(x => x.MovimentacaoCategoria.Descricao == item).Select(x => x.Valor).Sum()
                 });
             }
 
-            var categoriasParcelamentos = movimentacoes.Where(x => x.CodigoParcelamento is not null && x.MovimentacaoTipo.Descricao == "Saída")
+            var categoriasParcelamentos = movimentacoes.Where(x => x.CodigoParcelamento is not null && x.MovimentacaoTipo.Descricao == TipoDeMovimentacao.Saida)
                 .Select(x => x.MovimentacaoCategoria.Descricao).Distinct();
 
             foreach (var item in categoriasParcelamentos)
@@ -124,8 +125,8 @@ namespace ControleFinanceiro.Services
             resultado.TotaisPorCategoria = resultado.TotaisPorCategoria.OrderBy(x => x.Valor).ToList();
             resultado.TotaisPorCategoriaParcelamentos = resultado.TotaisPorCategoriaParcelamentos.OrderBy(x => x.Valor).ToList();
             resultado.ValorAmortizadoNoMes = resultado.Movimentacoes.Where(x => x.UltimaParcela).Select(x => x.Valor).Sum();
-            resultado.ValorContasNaoPrioritarias = resultado.Movimentacoes.Where(x => !x.Prioritaria && x.Valor < 0).Select(x => x.Valor).Sum();
-            resultado.ValorContasPrioritarias = resultado.Movimentacoes.Where(x => x.Prioritaria && x.Valor < 0).Select(x => x.Valor).Sum();
+            resultado.ValorContasNaoEssenciais = resultado.Movimentacoes.Where(x => !x.Essencial && x.Valor < 0).Select(x => x.Valor).Sum();
+            resultado.ValorContasEssenciais = resultado.Movimentacoes.Where(x => x.Essencial && x.Valor < 0).Select(x => x.Valor).Sum();
 
             return resultado;
         }
@@ -144,7 +145,7 @@ namespace ControleFinanceiro.Services
                 {
                     Codigo = item.Codigo,
                     CorDoTextDeValor = item.Valor < 0 ? "text-danger" : "text-success",
-                    MeioDeParcelamento = item.Valor > 0 ? "Não se aplica" : item.CodigoCartaoDeCredito is null ? "Outro" : $"Crédito/{item?.CartaoDeCredito?.BandeiraCartao.Descricao}/{item?.CartaoDeCredito?.NumeroCartao.Substring(12, 4)}/{((item?.CartaoDeCredito?.Virtual ?? false) ? "Virtual" : "Físico")}",
+                    MeioDeParcelamento = CommonHelper.FormatarDescricaoCartao(item.Cartao),
                     Categoria = item.MovimentacaoCategoria.Descricao,
                     Tipo = item.MovimentacaoTipo.Descricao,
                     DataDaCompra = item.DataDaCompra,
@@ -152,7 +153,7 @@ namespace ControleFinanceiro.Services
                     Descricao = item.Descricao,
                     Valor = item.Valor,
                     Baixado = item.Baixado,
-                    Prioritaria = item.ContaPrioritaria,
+                    Essencial = item.Essencial,
                     UltimaParcela = valorAmortizacao < 0
                 };
             }
@@ -179,12 +180,12 @@ namespace ControleFinanceiro.Services
 
                 movimentacaoParaEditar.CodigoMovimentacaoTipo = tipoCadastradoNaBase.Codigo;
                 movimentacaoParaEditar.CodigoMovimentacaoCategoria = model.CodigoMovimentacaoCategoria;
-                if (tipoCadastradoNaBase.Descricao.ToLower() == "saída")
+                if (tipoCadastradoNaBase.Descricao == TipoDeMovimentacao.Saida)
                 {
-                    movimentacaoParaEditar.CodigoCartaoDeCredito = model.CodigoCartaoDeCredito;
-                    movimentacaoParaEditar.DataMovimentacao = CommonHelper.ConverterDateOnlyParaDateTime(model.CodigoCartaoDeCredito is null ? model.DataDaCompra : _cartaoDeCreditoService.ObterDataDaParcela(model.CodigoCartaoDeCredito.Value, model.DataDaCompra));
+                    movimentacaoParaEditar.CodigoCartao = model.CodigoCartao;
+                    movimentacaoParaEditar.DataMovimentacao = CommonHelper.ConverterDateOnlyParaDateTime(model.CodigoCartao is null ? model.DataDaCompra : _CartaoService.ObterDataDaParcela(model.CodigoCartao.Value, model.DataDaCompra));
                 }
-                movimentacaoParaEditar.Valor = tipoCadastradoNaBase.Descricao.ToLower() != "entrada" ? model.Valor * -1 : model.Valor;
+                movimentacaoParaEditar.Valor = tipoCadastradoNaBase.Descricao != TipoDeMovimentacao.Entrada ? model.Valor * -1 : model.Valor;
                 movimentacaoParaEditar.DataDaCompra = CommonHelper.ConverterDateOnlyParaDateTime(model.DataDaCompra);
             }
             else
@@ -193,7 +194,7 @@ namespace ControleFinanceiro.Services
                 movimentacaoParaEditar.Valor = model.Valor * -1;
             }
             movimentacaoParaEditar.Descricao = model.Descricao;
-            movimentacaoParaEditar.ContaPrioritaria = model.Prioritaria;
+            movimentacaoParaEditar.Essencial = model.Essencial;
 
             Update(movimentacaoParaEditar);
             scope.Complete();
@@ -207,11 +208,11 @@ namespace ControleFinanceiro.Services
                 Codigo = movimentacaoParaEditar.Codigo,
                 CodigoParcelamento = movimentacaoParaEditar.CodigoParcelamento,
                 DataDaCompra = DateOnly.FromDateTime(movimentacaoParaEditar.DataDaCompra),
-                CodigoCartaoDeCredito = movimentacaoParaEditar.CodigoCartaoDeCredito,
+                CodigoCartao = movimentacaoParaEditar.CodigoCartao,
                 CodigoMovimentacaoCategoria = movimentacaoParaEditar.CodigoMovimentacaoCategoria,
                 CodigoMovimentacaoTipo = movimentacaoParaEditar.CodigoMovimentacaoTipo,
                 DataMovimentacao = DateOnly.FromDateTime(movimentacaoParaEditar.DataMovimentacao),
-                Prioritaria = movimentacaoParaEditar.ContaPrioritaria,
+                Essencial = movimentacaoParaEditar.Essencial,
                 Descricao = movimentacaoParaEditar.Descricao,
                 Valor = Math.Abs(movimentacaoParaEditar.Valor)
             };
@@ -257,7 +258,7 @@ namespace ControleFinanceiro.Services
                 throw new Exception("O código da categoria movimentação não foi informado");
 
             using var conn = new SqlConnection(ConnectionString);
-            conn.Execute("UPDATE Movimentacao SET Baixado = @Baixado, ContaPrioritaria = @ContaPrioritaria, DataDaCompra = @DataDaCompra, CodigoCartaoDeCredito = @CodigoCartaoDeCredito, DataMovimentacao = @DataMovimentacao,Valor = @Valor,CodigoMovimentacaoCategoria = @CodigoMovimentacaoCategoria,CodigoMovimentacaoTipo = @CodigoMovimentacaoTipo,Descricao = @Descricao WHERE Codigo = @Codigo", movimentacao);
+            conn.Execute("UPDATE Movimentacao SET Baixado = @Baixado, Essencial = @Essencial, DataDaCompra = @DataDaCompra, CodigoCartao = @CodigoCartao, DataMovimentacao = @DataMovimentacao,Valor = @Valor,CodigoMovimentacaoCategoria = @CodigoMovimentacaoCategoria,CodigoMovimentacaoTipo = @CodigoMovimentacaoTipo,Descricao = @Descricao WHERE Codigo = @Codigo", movimentacao);
         }
 
         public List<Movimentacao> SelectSQL(
@@ -274,11 +275,12 @@ namespace ControleFinanceiro.Services
            List<Guid>? codigosParcelamentos = null)
         {
             StringBuilder sql = new();
-            sql.AppendLine("SELECT A.*,B.*,C.*,D.*,E.* FROM Movimentacao A (NOLOCK)");
+            sql.AppendLine("SELECT A.*,B.*,C.*,D.*,E.*,F.* FROM Movimentacao A (NOLOCK)");
             sql.AppendLine("INNER JOIN MovimentacaoCategoria B (NOLOCK) ON A.CodigoMovimentacaoCategoria = B.Codigo");
             sql.AppendLine("INNER JOIN MovimentacaoTipo C (NOLOCK) ON A.CodigoMovimentacaoTipo = C.Codigo");
-            sql.AppendLine("LEFT JOIN CartaoDeCredito D (NOLOCK) ON A.CodigoCartaoDeCredito = D.Codigo");
-            sql.AppendLine("LEFT JOIN BandeiraCartao E (NOLOCK) ON D.CodigoBandeiraCartao = E.Codigo");
+            sql.AppendLine("LEFT JOIN Cartao D (NOLOCK) ON A.CodigoCartao = D.Codigo");
+            sql.AppendLine("LEFT JOIN CartaoBandeira E (NOLOCK) ON D.CodigoCartaoBandeira = E.Codigo");
+            sql.AppendLine("LEFT JOIN CartaoTipo F (NOLOCK) ON D.CodigoCartaoTipo = F.Codigo ");
             sql.AppendLine("WHERE A.Codigo = ISNULL(@Codigo,A.Codigo)");
             sql.AppendLine("AND A.CodigoMovimentacaoTipo = ISNULL(@CodigoMovimentacaoTipo,A.CodigoMovimentacaoTipo)");
             sql.AppendLine("AND A.CodigoMovimentacaoCategoria = ISNULL(@CodigoMovimentacaoCategoria,A.CodigoMovimentacaoCategoria)");
@@ -310,16 +312,17 @@ namespace ControleFinanceiro.Services
             sql.AppendLine("ORDER BY A.DataMovimentacao DESC");
 
             using var conn = new SqlConnection(ConnectionString);
-            return conn.Query<Movimentacao, MovimentacaoCategoria, MovimentacaoTipo, CartaoDeCredito, BandeiraCartao, Movimentacao>(sql.ToString(),
-                (movimentacao, catagoria, tipo, cartaoDeCredito, bandeiraCartao) =>
+            return conn.Query<Movimentacao, MovimentacaoCategoria, MovimentacaoTipo, Cartao, CartaoBandeira, CartaoTipo, Movimentacao>(sql.ToString(),
+                (movimentacao, catagoria, tipo, cartao, cartaoBandeira, cartaoTipo) =>
                 {
                     movimentacao.MovimentacaoCategoria = catagoria;
                     movimentacao.MovimentacaoTipo = tipo;
 
-                    if (cartaoDeCredito is not null)
+                    if (cartao is not null)
                     {
-                        cartaoDeCredito.BandeiraCartao = bandeiraCartao;
-                        movimentacao.CartaoDeCredito = cartaoDeCredito;
+                        cartao.CartaoTipo = cartaoTipo;
+                        cartao.CartaoBandeira = cartaoBandeira;
+                        movimentacao.Cartao = cartao;
                     }
 
                     return movimentacao;
@@ -351,7 +354,7 @@ namespace ControleFinanceiro.Services
         private void InsertSQL(Movimentacao movimentacao)
         {
             var conn = new SqlConnection(ConnectionString);
-            conn.Execute("insert into Movimentacao (ContaPrioritaria,Codigo,DataDaCompra,CodigoCartaoDeCredito,CodigoParcelamento,DataMovimentacao,DataHora,Valor,CodigoMovimentacaoCategoria,CodigoMovimentacaoTipo,Descricao) values (@ContaPrioritaria,@Codigo,@DataDaCompra,@CodigoCartaoDeCredito,@CodigoParcelamento,@DataMovimentacao,@DataHora,@Valor,@CodigoMovimentacaoCategoria,@CodigoMovimentacaoTipo,@Descricao)", movimentacao);
+            conn.Execute("insert into Movimentacao (Essencial,Codigo,DataDaCompra,CodigoCartao,CodigoParcelamento,DataMovimentacao,DataHora,Valor,CodigoMovimentacaoCategoria,CodigoMovimentacaoTipo,Descricao) values (@Essencial,@Codigo,@DataDaCompra,@CodigoCartao,@CodigoParcelamento,@DataMovimentacao,@DataHora,@Valor,@CodigoMovimentacaoCategoria,@CodigoMovimentacaoTipo,@Descricao)", movimentacao);
         }
 
         #endregion

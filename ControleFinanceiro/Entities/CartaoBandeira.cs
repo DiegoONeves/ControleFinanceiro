@@ -1,6 +1,6 @@
 ﻿namespace ControleFinanceiro.Entities
 {
-    public class BandeiraCartao
+    public class CartaoBandeira
     {
         public Guid Codigo { get; set; }
         public string Descricao { get; set; } = string.Empty;
