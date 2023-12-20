@@ -1,6 +1,7 @@
 ﻿using ControleFinanceiro.Models;
 using ControleFinanceiro.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace ControleFinanceiro.Controllers
 {
@@ -13,16 +14,18 @@ namespace ControleFinanceiro.Controllers
         }
         public IActionResult Index()
         {
-            return View(_service.Obter());
+            return View(_service.ObterParaListar());
         }
 
         public IActionResult Cadastrar()
         {
-            return View();
+            CategoriaCadastroViewModel model = new();
+            CarregarCategoriasPais(model);
+            return View(model);
         }
 
         [HttpPost]
-        public IActionResult Cadastrar(MovimentacaoCategoriaCadastroViewModel model)
+        public IActionResult Cadastrar(CategoriaCadastroViewModel model)
         {
             try
             {
@@ -41,12 +44,14 @@ namespace ControleFinanceiro.Controllers
         [Route("/{controller}/{action}/{codigo}")]
         public IActionResult Editar(Guid codigo)
         {
-            return View(_service.ObterParaEditar(codigo));
+            var model = _service.ObterParaEditar(codigo);
+            CarregarCategoriasPais(model);
+            return View(model);
         }
 
         [HttpPut]
         [HttpPost]
-        public IActionResult Editar(MovimentacaoCategoriaEdicaoViewModel model)
+        public IActionResult Editar(CategoriaEdicaoViewModel model)
         {
             try
             {
@@ -60,6 +65,15 @@ namespace ControleFinanceiro.Controllers
             }
         }
 
-        
+        private void CarregarCategoriasPais(dynamic model)
+        {
+            model.CategoriasPais = _service.SelectSQL(somentePais: true, ativo: true).Select(c => new SelectListItem()
+            {
+                Text = $"{c.Descricao}",
+                Value = c.Codigo.ToString()
+            }).ToList();
+        }
+
+
     }
 }

@@ -23,7 +23,7 @@
             <td>Descrição</td>
             <td>Quantidade de parcelas</td>
             <td>Valor da parcela</td>
-            <td>Ações</td>
+            <td colspan="2">Ações</td>
         </tr>
     </thead>
     <tbody>
@@ -39,7 +39,10 @@
                 <td>@item.QuantidadeParcela</td>
                 <td>@item.Valor.ToString("C")</td>
                 <td><a asp-action="Editar" class="btn btn-primary" asp-route-codigo="@item.Codigo">Editar</a></td>
+                <td><a onclick="javascript: return confirmSubmitForm('Tem certeza que deseja excluir o parcelamento @item.Descricao?');" asp-action="Excluir" class="btn btn-danger" asp-route-codigo="@item.Codigo">Excluir</a></td>
             </tr>
         }
     </tbody>
 </table>
+
+

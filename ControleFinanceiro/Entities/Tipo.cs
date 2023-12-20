@@ -1,6 +1,6 @@
 ﻿namespace ControleFinanceiro.Entities
 {
-    public class MovimentacaoTipo
+    public class Tipo
     {
         public Guid Codigo { get; set; }
         public string Descricao { get; set; }

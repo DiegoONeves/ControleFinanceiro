@@ -4,7 +4,7 @@
     {
         public Guid Codigo { get; set; }
         public Guid? CodigoCartao { get; set; } = null;
-        public Guid CodigoMovimentacaoCategoria { get; set; }
+        public Guid CodigoCategoria { get; set; }
         public string Descricao { get; set; } = string.Empty;
         public decimal Valor { get; set; }
         public DateTime DataPrimeiraParcela { get; set; }
@@ -13,7 +13,7 @@
         public DateTime DataUltimaParcela { get; set; }
         public DateTime DataDaCompra { get; set; }
         public Cartao? Cartao { get; set; } = null;
-        public MovimentacaoCategoria MovimentacaoCategoria { get; set; } = new();
-        public bool Essencial { get; set; } = false;
+        public Categoria Categoria { get; set; } = new();
+        public bool DespesaFixa { get; set; } = false;
     }
 }

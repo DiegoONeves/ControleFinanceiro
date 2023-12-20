@@ -44,10 +44,10 @@
             <h4>Valor liberado <span class="badge bg-info"> @Model.ValorAmortizadoNoMes.ToString("C")</span></h4>
         </div>
         <div class="col">
-            <h4>Essenciais <span class="badge bg-info">@Model.ValorContasEssenciais.ToString("C")</span></h4>
+            <h4>Despesas fixas <span class="badge bg-info">@Model.ValorContasEssenciais.ToString("C")</span></h4>
         </div>
         <div class="col">
-            <h4>Avulsas <span class="badge bg-danger">@Model.ValorContasNaoEssenciais.ToString("C")</span></h4>
+            <h4>Despesas variáveis <span class="badge bg-danger">@Model.ValorContasNaoEssenciais.ToString("C")</span></h4>
         </div>
     </div>
 </div>
@@ -69,7 +69,7 @@
             <tr class="@(item.UltimaParcela?"table-success": item.Baixado?"table-secondary": "")">
                 <td>@item.DataDaCompra.ToShortDateString()</td>
                 <td>@item.Categoria</td>
-                <td>@item.Descricao @(item.Essencial ? "(Essencial)" : "")</td>
+                <td>@item.Descricao @(item.DespesaFixa ? "(Despesa fixa)" : "")</td>
                 <td class="@item.CorDoTextDeValor">@item.Valor.ToString("C")</td>
                 <td><a asp-action="Editar" class="btn btn-primary" asp-route-codigo="@item.Codigo">Editar</a></td>
                 <td><a asp-action="BaixarOuReverter" class="@(item.Baixado?"btn btn-secondary": "btn btn-primary")" asp-route-codigo="@item.Codigo">@(item.Baixado ? "Desfazer" : "Baixar")</a></td>
@@ -96,6 +96,26 @@
             <tr>
                 <td>@item.Categoria</td>
                 <td>@item.Valor.ToString("C") (@item.ValorMesAnterior.ToString("C"))</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<br />
+<br />
+<table class="table table-hover table-bordered">
+    <thead>
+        <tr class="table table-dark">
+            <td class="text-center" colspan="3">Movimentações por categoria pai</td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.TotaisPorCategoriaPai)
+        {
+            <tr>
+                <td>@item.Categoria</td>
+                <td>@item.Valor.ToString("C")</td>
+                <td>@item.PercentualSobreRenda.ToString("P2")</td>
             </tr>
         }
     </tbody>

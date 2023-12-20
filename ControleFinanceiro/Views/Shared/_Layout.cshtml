@@ -29,6 +29,9 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Parcelamento" asp-action="Index">Parcelamentos</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="MovimentacaoRecorrente" asp-action="Index">Movimentações Recorrentes</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Movimentacao" asp-action="Index">Movimentações</a>
                         </li>
                     </ul>
@@ -53,3 +56,14 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+
+<script>
+    function confirmSubmitForm(text) {
+        var r = confirm(text);
+        if (r == false) {
+            return false;
+        }
+        // do something
+        return true;
+    }
+</script>

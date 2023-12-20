@@ -1,28 +1,27 @@
-﻿@model ControleFinanceiro.Models.ParcelamentoEdicaoViewModel
+﻿@model ControleFinanceiro.Models.MovimentacaoRecorrenteNovaViewModel
 
 @{
-    ViewData["Title"] = "Editar Parcelamento";
+    ViewData["Title"] = "Cadastrar Movimentação Recorrente";
 }
 
-<h3>Editar Parcelamento</h3>
+<h3>Cadastrar Movimentação Recorrente</h3>
 <hr />
 
-<form asp-action="Editar">
+<form asp-action="Cadastrar">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-    @Html.HiddenFor(x=>x.Codigo)
+    <div class="mb-2">
+        <label asp-for="CodigoTipo" class="control-label"></label>
+        <select asp-for="CodigoTipo" class="form-control" asp-items="@Model.Tipos">
+            <option selected value="">Selecione um tipo de movimentação</option>
+        </select>
+        <span asp-validation-for="CodigoTipo" class="text-danger"></span>
+    </div>
     <div class="mb-2">
         <label asp-for="CodigoCategoria" class="control-label"></label>
         <select asp-for="CodigoCategoria" class="form-control" asp-items="@Model.Categorias">
             <option selected value="">Selecione uma categoria</option>
         </select>
         <span asp-validation-for="CodigoCategoria" class="text-danger"></span>
-    </div>
-    <div class="mb-2">
-        <label asp-for="CodigoCartao" class="control-label"></label>
-        <select asp-for="CodigoCartao" class="form-control" asp-items="@Model.CartoesDePagamento">
-            <option selected value="">Selecione um cartão de pagamento</option>
-        </select>
-        <span asp-validation-for="CodigoCartao" class="text-danger"></span>
     </div>
     <div class="mb-2">
         <div class="form-check">
@@ -36,14 +35,14 @@
         <span asp-validation-for="Descricao" class="text-danger"></span>
     </div>
     <div class="mb-2">
-        <label asp-for="QuantidadeParcela" class="control-label"></label>
-        <input asp-for="QuantidadeParcela" class="form-control" />
-        <span asp-validation-for="QuantidadeParcela" class="text-danger"></span>
+        <label asp-for="QuantidadeMovimentacao" class="control-label"></label>
+        <input asp-for="QuantidadeMovimentacao" class="form-control" />
+        <span asp-validation-for="QuantidadeMovimentacao" class="text-danger"></span>
     </div>
     <div class="mb-2">
-        <label asp-for="DataDaCompra" class="control-label"></label>
-        <input asp-for="DataDaCompra" class="form-control" />
-        <span asp-validation-for="DataDaCompra" class="text-danger"></span>
+        <label asp-for="DataDaPrimeiraMovimentacao" class="control-label"></label>
+        <input asp-for="DataDaPrimeiraMovimentacao" class="form-control" />
+        <span asp-validation-for="DataDaPrimeiraMovimentacao" class="text-danger"></span>
     </div>
     <div class="mb-2">
         <label asp-for="Valor" class="control-label"></label>
@@ -51,13 +50,11 @@
         <span asp-validation-for="Valor" class="text-danger"></span>
     </div>
     <div class="mb-3">
-        <button class="btn btn-primary">Editar</button>
+        <button class="btn btn-primary">Cadastrar</button>
         <button class="btn btn-light" asp-action="Index">Voltar</button>
     </div>
 
 </form>
-
-
 
 
 

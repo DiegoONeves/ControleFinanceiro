@@ -5,5 +5,6 @@
         public string Categoria { get; set; } = string.Empty;
         public decimal Valor { get; set; } = 0;
         public decimal ValorMesAnterior { get; set; } = 0;
+        public decimal PercentualSobreRenda { get; set; } = 0;
     }
 }

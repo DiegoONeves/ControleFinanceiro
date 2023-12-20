@@ -15,18 +15,18 @@
     @if (Model.CodigoParcelamento is null)
     {
         <div class="mb-2">
-            <label asp-for="CodigoMovimentacaoTipo" class="control-label"></label>
-            <select asp-for="CodigoMovimentacaoTipo" class="form-control" asp-items="@Model.Tipos">
+            <label asp-for="CodigoTipo" class="control-label"></label>
+            <select asp-for="CodigoTipo" class="form-control" asp-items="@Model.Tipos">
                 <option selected value="">Selecione um tipo de movimentação</option>
             </select>
-            <span asp-validation-for="CodigoMovimentacaoTipo" class="text-danger"></span>
+            <span asp-validation-for="CodigoTipo" class="text-danger"></span>
         </div>
         <div class="mb-2">
-            <label asp-for="CodigoMovimentacaoCategoria" class="control-label"></label>
-            <select asp-for="CodigoMovimentacaoCategoria" class="form-control" asp-items="@Model.Categorias">
+            <label asp-for="CodigoCategoria" class="control-label"></label>
+            <select asp-for="CodigoCategoria" class="form-control" asp-items="@Model.Categorias">
                 <option selected value="">Selecione uma categoria</option>
             </select>
-            <span asp-validation-for="CodigoMovimentacaoCategoria" class="text-danger"></span>
+            <span asp-validation-for="CodigoCategoria" class="text-danger"></span>
         </div>
         <div class="mb-2">
             <label asp-for="CodigoCartao" class="control-label"></label>
@@ -37,8 +37,8 @@
         </div>
         <div class="mb-2">
             <div class="form-check">
-                <label asp-for="Essencial" class="form-check-label"></label>
-                <input asp-for="Essencial" class="form-check-input" />
+                <label asp-for="DespesaFixa" class="form-check-label"></label>
+                <input asp-for="DespesaFixa" class="form-check-input" />
             </div>
         </div>
         <div class="mb-2">
@@ -63,17 +63,17 @@
     }
     else
     {
-        @Html.HiddenFor(x=>x.CodigoMovimentacaoTipo)
+        @Html.HiddenFor(x=>x.CodigoTipo)
         @Html.HiddenFor(x=>x.DataDaCompra)
         <div class="mb-2">
-            <label asp-for="CodigoMovimentacaoTipo" class="control-label"></label>
-            <select asp-for="CodigoMovimentacaoTipo" class="form-control" asp-items="@Model.Tipos" disabled>
+            <label asp-for="CodigoTipo" class="control-label"></label>
+            <select asp-for="CodigoTipo" class="form-control" asp-items="@Model.Tipos" disabled>
                 <option selected value="">Selecione um tipo de movimentação</option>
             </select>
         </div>
         <div class="mb-2">
-            <label asp-for="CodigoMovimentacaoCategoria" class="control-label"></label>
-            <select asp-for="CodigoMovimentacaoCategoria" class="form-control" asp-items="@Model.Categorias" disabled>
+            <label asp-for="CodigoCategoria" class="control-label"></label>
+            <select asp-for="CodigoCategoria" class="form-control" asp-items="@Model.Categorias" disabled>
                 <option selected value="">Selecione uma categoria</option>
             </select>
         </div>

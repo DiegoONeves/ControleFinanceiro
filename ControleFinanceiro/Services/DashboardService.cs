@@ -5,12 +5,12 @@ namespace ControleFinanceiro.Services
     public class DashboardService : BaseService
     {
         private readonly MovimentacaoService _movimentacaoService;
-        private readonly MovimentacaoTipoService _movimentacaoTipoService;
+        private readonly TipoService _TipoService;
 
-        public DashboardService(IConfiguration config, MovimentacaoService movimentacaoService, MovimentacaoTipoService movimentacaoTipoService) : base(config)
+        public DashboardService(IConfiguration config, MovimentacaoService movimentacaoService, TipoService TipoService) : base(config)
         {
             _movimentacaoService = movimentacaoService;
-            _movimentacaoTipoService = movimentacaoTipoService;
+            _TipoService = TipoService;
 
         }
 
@@ -18,16 +18,16 @@ namespace ControleFinanceiro.Services
         {
             DashBoardViewModel r = new();
 
-            var movimentacoesFuturas = _movimentacaoService.SelectSQL(codigoTipo: _movimentacaoTipoService.ObterSaida().Codigo, dataMaiorOuIgualA: DateTime.Now, baixado: false, somenteParcelamentos: true);
+            var movimentacoesFuturas = _movimentacaoService.SelectSQL(codigoTipo: _TipoService.ObterSaida().Codigo, dataMaiorOuIgualA: DateTime.Now, baixado: false, somenteParcelamentos: true);
             r.DividaTotal = movimentacoesFuturas.Select(x => x.Valor).Sum();
-            var categorias = movimentacoesFuturas.Select(x => x.MovimentacaoCategoria.Descricao).Distinct();
+            var categorias = movimentacoesFuturas.Select(x => x.Categoria.Descricao).Distinct();
 
             foreach (var item in categorias)
             {
                 r.DividaPorCategoria.Add(new DashboardDividaPorCategoriaViewModel
                 {
                     Categoria = item,
-                    Valor = movimentacoesFuturas.Where( x => x.MovimentacaoCategoria.Descricao == item).Select(x => x.Valor).Sum()
+                    Valor = movimentacoesFuturas.Where( x => x.Categoria.Descricao == item).Select(x => x.Valor).Sum()
                 });
             }
             r.DividaPorCategoria = r.DividaPorCategoria.OrderBy(x => x.Valor).Take(5).ToList();

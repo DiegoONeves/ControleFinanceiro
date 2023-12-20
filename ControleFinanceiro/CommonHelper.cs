@@ -16,5 +16,8 @@ namespace ControleFinanceiro
             return $"{cartao.CartaoTipo.Descricao}/{cartao.CartaoBandeira.Descricao}{(!string.IsNullOrEmpty(cartao.NumeroCartao) ? $"/{cartao?.NumeroCartao.Substring(12, 4)}" : "")}/{((cartao?.Virtual ?? false) ? "Virtual" : "Físico")}";
         }
 
+        public static decimal TransformarDecimalNegativoEmPositivo(decimal negativo)
+        => negativo * -1;
+
     }
 }

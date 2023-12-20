@@ -5,21 +5,21 @@ using System.Data.SqlClient;
 
 namespace ControleFinanceiro.Services
 {
-    public class MovimentacaoTipoService : BaseService
+    public class TipoService : BaseService
     {
-        public MovimentacaoTipoService(IConfiguration config)
+        public TipoService(IConfiguration config)
          : base(config)
         {
 
         }
 
-        public MovimentacaoTipo ObterEntrada() => Obter().First(x => x.Descricao == TipoDeMovimentacao.Entrada);
-        public MovimentacaoTipo ObterSaida() => Obter().First(x => x.Descricao == TipoDeMovimentacao.Saida);
+        public Tipo ObterEntrada() => Obter().First(x => x.Descricao == TipoDeMovimentacao.Entrada);
+        public Tipo ObterSaida() => Obter().First(x => x.Descricao == TipoDeMovimentacao.Saida);
 
-        public List<MovimentacaoTipo> Obter(Guid? codigo = null)
+        public List<Tipo> Obter(Guid? codigo = null)
         {
             using var conn = new SqlConnection(ConnectionString);
-            return conn.Query<MovimentacaoTipo>("SELECT * FROM MovimentacaoTipo (NOLOCK) WHERE Codigo = ISNULL(@Codigo,Codigo)", new { @Codigo = codigo }).ToList();
+            return conn.Query<Tipo>("SELECT * FROM Tipo (NOLOCK) WHERE Codigo = ISNULL(@Codigo,Codigo)", new { @Codigo = codigo }).ToList();
         }
     }
 }

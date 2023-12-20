@@ -3,6 +3,7 @@ using ControleFinanceiro.Models;
 using ControleFinanceiro.ValueObjects;
 using Dapper;
 using System.Data.SqlClient;
+using System.Reflection;
 using System.Text;
 using System.Transactions;
 
@@ -11,16 +12,16 @@ namespace ControleFinanceiro.Services
     public class ParcelamentoService : BaseService
     {
         private readonly MovimentacaoService _movimentacaoService;
-        private readonly MovimentacaoTipoService _movimentacaoTipoService;
+        private readonly TipoService _TipoService;
         private readonly CartaoService _cartaoService;
         public ParcelamentoService(IConfiguration config,
             MovimentacaoService movimentacaoService,
-            MovimentacaoTipoService movimentacaoTipoService,
+            TipoService TipoService,
             CartaoService cartaoService)
             : base(config)
         {
             _movimentacaoService = movimentacaoService;
-            _movimentacaoTipoService = movimentacaoTipoService;
+            _TipoService = TipoService;
             _cartaoService = cartaoService;
         }
 
@@ -33,9 +34,9 @@ namespace ControleFinanceiro.Services
                 parcelamentosTemp.Add(new ParcelamentoViewModel
                 {
                     Codigo = item.Codigo,
-                    Categoria = item.MovimentacaoCategoria.Descricao,
+                    Categoria = item.Categoria.Descricao,
                     CodigoCartao = item.CodigoCartao,
-                    CodigoMovimentacaoCategoria = item.CodigoMovimentacaoCategoria,
+                    CodigoCategoria = item.CodigoCategoria,
                     Descricao = item.Descricao,
                     DataDaCompra = item.DataDaCompra,
                     DataPrimeiraParcela = item.DataPrimeiraParcela,
@@ -58,12 +59,12 @@ namespace ControleFinanceiro.Services
             ParcelamentoEdicaoViewModel r = new();
             var resultado = SelectSQL(codigo).First();
             r.DataPrimeiraParcela = DateOnly.FromDateTime(resultado.DataPrimeiraParcela);
-            r.DataDaCompra = DateOnly.FromDateTime(resultado.DataPrimeiraParcela);
+            r.DataDaCompra = DateOnly.FromDateTime(resultado.DataDaCompra);
             r.CodigoCartao = resultado.CodigoCartao;
             r.Codigo = resultado.Codigo;
             r.Valor = resultado.Valor;
-            r.Essencial = resultado.Essencial;
-            r.CodigoMovimentacaoCategoria = resultado.CodigoMovimentacaoCategoria;
+            r.DespesaFixa = resultado.DespesaFixa;
+            r.CodigoCategoria = resultado.CodigoCategoria;
             r.Descricao = resultado.Descricao;
             r.QuantidadeParcela = resultado.QuantidadeParcela;
             return r;
@@ -83,11 +84,11 @@ namespace ControleFinanceiro.Services
                     DataDaCompra = dataDaCompra,
                     Descricao = model.Descricao,
                     QuantidadeParcela = model.QuantidadeParcela,
-                    CodigoMovimentacaoCategoria = model.CodigoMovimentacaoCategoria,
+                    CodigoCategoria = model.CodigoCategoria,
                     DataPrimeiraParcela = dataPrimeiraParcela,
                     DataUltimaParcela = dataPrimeiraParcela.AddMonths(model.QuantidadeParcela - 1),
                     Valor = model.Valor,
-                    Essencial = model.Essencial,
+                    DespesaFixa = model.DespesaFixa,
                     DataHora = DateTime.Now
                 };
                 InsertSQL(p);
@@ -99,7 +100,7 @@ namespace ControleFinanceiro.Services
 
         private void InserirMovimentacoesDeParcelamento(dynamic model, DateOnly dataDaParcela, Parcelamento p)
         {
-            Guid codigoTipo = _movimentacaoTipoService.Obter().First(x => x.Descricao == TipoDeMovimentacao.Saida).Codigo;
+            Guid codigoTipo = _TipoService.Obter().First(x => x.Descricao == TipoDeMovimentacao.Saida).Codigo;
             for (int i = 0; i < model.QuantidadeParcela; i++)
             {
                 dataDaParcela = dataDaParcela.AddMonths(i == 0 ? 0 : 1);
@@ -107,13 +108,13 @@ namespace ControleFinanceiro.Services
                 {
                     DataMovimentacao = dataDaParcela,
                     DataDaCompra = model.DataDaCompra,
-                    CodigoMovimentacaoTipo = codigoTipo,
+                    CodigoTipo = codigoTipo,
                     CodigoParcelamento = p.Codigo,
                     Valor = model.Valor * -1,
                     Descricao = $"Parcela {i + 1} de {model.QuantidadeParcela} - {model.Descricao}",
-                    CodigoMovimentacaoCategoria = model.CodigoMovimentacaoCategoria,
+                    CodigoCategoria = model.CodigoCategoria,
                     CodigoCartao = model.CodigoCartao,
-                    Essencial =  model.Essencial,
+                    DespesaFixa = model.DespesaFixa,
                 };
                 _movimentacaoService.InserirMovimentacao(m);
             }
@@ -133,13 +134,13 @@ namespace ControleFinanceiro.Services
             DateOnly dataDaParcela = model.CodigoCartao is null ? model.DataDaCompra : _cartaoService.ObterDataDaParcela(model.CodigoCartao.Value, model.DataDaCompra);
             var dataPrimeiraParcela = CommonHelper.ConverterDateOnlyParaDateTime(dataDaParcela);
 
-            parcelamentoEdicao.CodigoMovimentacaoCategoria = model.CodigoMovimentacaoCategoria;
+            parcelamentoEdicao.CodigoCategoria = model.CodigoCategoria;
             parcelamentoEdicao.CodigoCartao = model.CodigoCartao;
             parcelamentoEdicao.DataPrimeiraParcela = dataPrimeiraParcela;
             parcelamentoEdicao.DataUltimaParcela = dataPrimeiraParcela.AddMonths(model.QuantidadeParcela - 1);
             parcelamentoEdicao.QuantidadeParcela = model.QuantidadeParcela;
             parcelamentoEdicao.DataDaCompra = dataDaCompra;
-            parcelamentoEdicao.Essencial = model.Essencial;
+            parcelamentoEdicao.DespesaFixa = model.DespesaFixa;
 
             //edito o parcelamento
             UpdateSQL(parcelamentoEdicao);
@@ -151,6 +152,19 @@ namespace ControleFinanceiro.Services
             scope.Complete();
         }
 
+        public void AbrirTransacaoParaExcluirParcelamento(Guid codigo)
+        {
+            //abro a trasação no banco de dados
+            using TransactionScope scope = new();
+
+            //exclusão de todas as movimentações desse parcelamento
+            _movimentacaoService.DeleteSQL(codigoParcelamento: codigo);
+
+            //efetuando exclusão do parcelamento depois de excluir as movimentações
+            DeleteSQL(codigo);
+
+            scope.Complete();
+        }
 
 
         #region Crud
@@ -159,8 +173,8 @@ namespace ControleFinanceiro.Services
         {
             StringBuilder sql = new();
             sql.AppendLine(@"UPDATE Parcelamento");
-            sql.AppendLine("SET CodigoMovimentacaoCategoria = @CodigoMovimentacaoCategoria,");
-            sql.AppendLine("Essencial = @Essencial,");
+            sql.AppendLine("SET CodigoCategoria = @CodigoCategoria,");
+            sql.AppendLine("DespesaFixa = @DespesaFixa,");
             sql.AppendLine("Descricao = @Descricao,");
             sql.AppendLine("QuantidadeParcela = @QuantidadeParcela,");
             sql.AppendLine("DataPrimeiraParcela = @DataPrimeiraParcela,");
@@ -177,22 +191,22 @@ namespace ControleFinanceiro.Services
         {
             StringBuilder sb = new();
             sb.AppendLine("SELECT A.*,B.*,C.*,D.*,E.* FROM Parcelamento A (NOLOCK) ");
-            sb.AppendLine("INNER JOIN MovimentacaoCategoria B (NOLOCK) ON A.CodigoMovimentacaoCategoria = B.Codigo ");
+            sb.AppendLine("INNER JOIN Categoria B (NOLOCK) ON A.CodigoCategoria = B.Codigo ");
             sb.AppendLine("LEFT JOIN Cartao C (NOLOCK) ON A.CodigoCartao = C.Codigo ");
             sb.AppendLine("LEFT JOIN CartaoBandeira D (NOLOCK) ON C.CodigoCartaoBandeira = D.Codigo ");
             sb.AppendLine("LEFT JOIN CartaoTipo E (NOLOCK) ON C.CodigoCartaoTipo = E.Codigo ");
             sb.AppendLine("WHERE A.Codigo = ISNULL(@Codigo,A.Codigo) ORDER BY A.DataDaCompra DESC ");
 
             using (var conn = new SqlConnection(ConnectionString))
-                return conn.Query<Parcelamento, MovimentacaoCategoria, Cartao, CartaoBandeira, CartaoTipo, Parcelamento>(sb.ToString(), (parcelamento, categoria, cartao, cartaoBandeira, cartaoTipo) =>
+                return conn.Query<Parcelamento, Categoria, Cartao, CartaoBandeira, CartaoTipo, Parcelamento>(sb.ToString(), (parcelamento, categoria, cartao, cartaoBandeira, cartaoTipo) =>
                 {
-                    parcelamento.MovimentacaoCategoria = categoria;
+                    parcelamento.Categoria = categoria;
                     if (cartao is not null)
                     {
                         cartao.CartaoTipo = cartaoTipo;
                         cartao.CartaoBandeira = cartaoBandeira;
                         parcelamento.Cartao = cartao;
-                        
+
                     }
 
                     return parcelamento;
@@ -203,7 +217,7 @@ namespace ControleFinanceiro.Services
         public void InsertSQL(Parcelamento p)
         {
             using var conn = new SqlConnection(ConnectionString);
-            conn.Execute("insert into Parcelamento (Essencial,Codigo,DataDaCompra,QuantidadeParcela,DataPrimeiraParcela,DataHora,Valor,CodigoMovimentacaoCategoria,Descricao,DataUltimaParcela) values (@Essencial,@Codigo,@DataDaCompra,@QuantidadeParcela,@DataPrimeiraParcela,@DataHora,@Valor,@CodigoMovimentacaoCategoria,@Descricao,@DataUltimaParcela)", p);
+            conn.Execute("insert into Parcelamento (DespesaFixa,Codigo,DataDaCompra,QuantidadeParcela,DataPrimeiraParcela,DataHora,Valor,CodigoCategoria,Descricao,DataUltimaParcela) values (@DespesaFixa,@Codigo,@DataDaCompra,@QuantidadeParcela,@DataPrimeiraParcela,@DataHora,@Valor,@CodigoCategoria,@Descricao,@DataUltimaParcela)", p);
         }
 
         public void DeleteSQL(Guid codigo)

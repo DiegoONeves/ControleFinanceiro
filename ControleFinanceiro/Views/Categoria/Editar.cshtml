@@ -1,4 +1,4 @@
-﻿@model ControleFinanceiro.Models.MovimentacaoCategoriaEdicaoViewModel
+﻿@model ControleFinanceiro.Models.CategoriaEdicaoViewModel
 
 @{
     ViewData["Title"] = "Editar Categoria";
@@ -14,6 +14,12 @@
         <label asp-for="Descricao" class="control-label"></label>
         <input asp-for="Descricao" class="form-control" />
         <span asp-validation-for="Descricao" class="text-danger"></span>
+    </div>
+    <div class="mb-2">
+        <label asp-for="CodigoCategoriaPai" class="control-label"></label>
+        <select asp-for="CodigoCategoriaPai" class="form-control" asp-items="@Model.CategoriasPais">
+            <option selected value="">Selecione uma categoria pai</option>
+        </select>
     </div>
     <div class="mb-2">
         <div class="form-check">

@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
 
 namespace ControleFinanceiro.Models
 {
-    public class MovimentacaoCategoriaEdicaoViewModel
+    public class CategoriaEdicaoViewModel
     {
         [Display(Name = "Código")]
         [Required(ErrorMessage = "O campo {0} é obrigatório")]
@@ -14,5 +15,9 @@ namespace ControleFinanceiro.Models
 
         [Display(Name = "Ativo?")]
         public bool Ativo { get; set; }
+
+        public List<SelectListItem> CategoriasPais { get; set; } = new();
+        [Display(Name = "Categoria pai")]
+        public Guid? CodigoCategoriaPai { get; set; } = null;
     }
 }

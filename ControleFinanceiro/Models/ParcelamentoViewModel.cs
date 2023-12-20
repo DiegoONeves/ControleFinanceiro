@@ -12,7 +12,7 @@
         public DateTime DataPrimeiraParcela { get; set; }
         public DateTime DataUltimaParcela { get; set; }
         public short QuantidadeParcela { get; set; }
-        public Guid CodigoMovimentacaoCategoria { get; set; }
+        public Guid CodigoCategoria { get; set; }
         public bool Finalizado { get; set; }
     }
 }

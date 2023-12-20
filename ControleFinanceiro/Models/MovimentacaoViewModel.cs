@@ -17,6 +17,7 @@ namespace ControleFinanceiro.Models
         public IEnumerable<MovimentacaoItemViewModel> Movimentacoes { get; set; }
 
         public List<DashboardDividaPorCategoriaViewModel> TotaisPorCategoria { get; set; } = new();
+        public List<DashboardDividaPorCategoriaViewModel> TotaisPorCategoriaPai { get; set; } = new();
         public List<DashboardDividaPorCategoriaViewModel> TotaisPorCategoriaParcelamentos { get; set; } = new();
     }
 }

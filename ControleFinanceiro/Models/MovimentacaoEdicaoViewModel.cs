@@ -7,17 +7,19 @@ namespace ControleFinanceiro.Models
     {
         public Guid Codigo { get; set; }
         public Guid? CodigoParcelamento { get; set; } = null;
+        public Guid? CodigoMovimentacaoRecorrente { get; set; } = null;
+ 
         public List<SelectListItem> CartoesDePagamento { get; set; } = new();
         public List<SelectListItem> Tipos { get; set; } = new();
         public List<SelectListItem> Categorias { get; set; } = new();
 
         [Display(Name = "Tipo de movimentação")]
         [Required(ErrorMessage = "O campo {0} é obrigatório")]
-        public Guid CodigoMovimentacaoTipo { get; set; }
+        public Guid CodigoTipo { get; set; }
 
         [Display(Name = "Categoria da movimentação")]
         [Required(ErrorMessage = "O campo {0} é obrigatório")]
-        public Guid CodigoMovimentacaoCategoria { get; set; }
+        public Guid CodigoCategoria { get; set; }
         [Display(Name = "Cartão de pagamento")]
         public Guid? CodigoCartao { get; set; } = null;
 
@@ -34,8 +36,8 @@ namespace ControleFinanceiro.Models
         public DateOnly DataMovimentacao { get; set; }
         public bool EstadoDoCampoCodigoCartaoDeCredito { get; set; }
 
-        [Display(Name = "Essencial")]
-        public bool Essencial { get; set; }
+        [Display(Name = "Despesa fixa?")]
+        public bool DespesaFixa { get; set; }
 
     }
 }

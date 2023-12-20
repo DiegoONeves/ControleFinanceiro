@@ -10,7 +10,7 @@ namespace ControleFinanceiro.Models
 
         [Display(Name = "Categoria da movimentação")]
         [Required(ErrorMessage = "O campo {0} é obrigatório")]
-        public Guid CodigoMovimentacaoCategoria { get; set; }
+        public Guid CodigoCategoria { get; set; }
 
         [Display(Name = "Cartão de pagamento")]
         public Guid? CodigoCartao { get; set; } = null;
@@ -29,8 +29,8 @@ namespace ControleFinanceiro.Models
         [Required(ErrorMessage = "O campo {0} é obrigatório")]
         public DateOnly DataDaCompra { get; set; }
 
-        [Display(Name = "Essencial")]
-        public bool Essencial { get; set; }
+        [Display(Name = "Despesa fixa?")]
+        public bool DespesaFixa { get; set; }
 
 
     }

@@ -1,0 +1,37 @@
+﻿@model IEnumerable<ControleFinanceiro.Models.MovimentacaoRecorrenteViewModel>
+
+@{
+    ViewData["Title"] = "Movimentações";
+}
+
+<h3>Movimentações Recorrentes</h3>
+<hr />
+
+<a asp-action="Cadastrar" class="btn btn-primary">Cadastrar</a>
+
+<br />
+<br />
+
+<table class="table table-hover table-bordered">
+    <thead>
+        <tr class="table-primary">
+            <td>Categoria</td>
+            <td>Descrição</td>
+            <td>Valor</td>
+            <td colspan="2">Ações</td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Categoria</td>
+                <td>@item.Descricao</td>
+                <td>@item.Valor.ToString("C")</td>
+                <td><a asp-action="Editar" class="btn btn-primary" asp-route-codigo="@item.Codigo">Editar</a></td>
+                <td><a onclick="javascript: return confirmSubmitForm('Tem certeza que deseja excluir a movimentação recorrente @item.Descricao?');" asp-action="Excluir" class="btn btn-danger" asp-route-codigo="@item.Codigo">Excluir</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
+

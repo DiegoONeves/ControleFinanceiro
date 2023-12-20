@@ -9,11 +9,11 @@ namespace ControleFinanceiro.Controllers
     {
         private readonly ParcelamentoService _service;
         private readonly CategoriaService _categoriaService;
-        private readonly MovimentacaoTipoService _tipoService;
+        private readonly TipoService _tipoService;
         private readonly CartaoService _cartaoService;
         public ParcelamentoController(ParcelamentoService service,
             CategoriaService categoriaService,
-            MovimentacaoTipoService tipoService,
+            TipoService tipoService,
             CartaoService cartaoService)
         {
             _service = service;
@@ -69,6 +69,15 @@ namespace ControleFinanceiro.Controllers
             }
             CarregarListagensEdicao(model);
             return View(model);
+        }
+
+
+        [HttpGet]
+        [Route("/{controller}/{action}/{codigo}")]
+        public IActionResult Excluir(Guid codigo)
+        {
+            _service.AbrirTransacaoParaExcluirParcelamento(codigo);
+            return RedirectToAction("Index");
         }
 
         private void CarregarListagensNovo(ParcelamentoNovoViewModel model)

@@ -5,13 +5,12 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace ControleFinanceiro.Controllers
 {
-    public class MovimentacaoController : Controller
+    public class MovimentacaoRecorrenteController : Controller
     {
-        private readonly MovimentacaoService _service;
+        private readonly MovimentacaoRecorrenteService _service;
         private readonly CategoriaService _categoriaService;
         private readonly TipoService _tipoService;
-        private readonly CartaoService _CartaoService;
-        public MovimentacaoController(MovimentacaoService service,
+        public MovimentacaoRecorrenteController(MovimentacaoRecorrenteService service,
             CategoriaService categoriaService,
             TipoService tipoService,
             CartaoService CartaoService)
@@ -19,46 +18,33 @@ namespace ControleFinanceiro.Controllers
             _service = service;
             _tipoService = tipoService;
             _categoriaService = categoriaService;
-            _CartaoService = CartaoService;
         }
 
         public IActionResult Index()
         {
-            return View(_service.BuscarMovimentacoes());
-        }
-
-        [HttpPost]
-        public IActionResult Index(MovimentacaoPesquisaViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                ModelState.Clear();
-                return View(_service.BuscarMovimentacoes(model));
-            }
-
-            return View(model);
+            return View(_service.BuscarMovimentacoesRecorrentes());
         }
 
         public IActionResult Cadastrar()
         {
-            MovimentacaoNovaViewModel model = new()
+            MovimentacaoRecorrenteNovaViewModel model = new()
             {
-                DataDaCompra = DateOnly.FromDateTime(DateTime.Now),
+                DataDaPrimeiraMovimentacao = DateOnly.FromDateTime(DateTime.Now),
             };
-            CarregarListagens(model, cartaoAtivo: true, categoriaAtiva: true);
+            CarregarListagens(model, categoriaAtiva: true);
             return View(model);
         }
 
         [HttpPost]
-        public IActionResult Cadastrar(MovimentacaoNovaViewModel model)
+        public IActionResult Cadastrar(MovimentacaoRecorrenteNovaViewModel model)
         {
             if (ModelState.IsValid)
             {
-                _service.AbrirTransacaoParaInserirNovaMovimentacao(model);
+                _service.AbrirTransacaoParaInserirNovaMovimentacaoRecorrente(model);
                 return RedirectToAction("Index");
             }
 
-            CarregarListagens(model, cartaoAtivo: true, categoriaAtiva: true);
+            CarregarListagens(model, categoriaAtiva: true);
             return View(model);
         }
 
@@ -72,11 +58,11 @@ namespace ControleFinanceiro.Controllers
         }
 
         [HttpPost]
-        public IActionResult Editar(MovimentacaoEdicaoViewModel model)
+        public IActionResult Editar(MovimentacaoRecorrenteEdicaoViewModel model)
         {
             if (ModelState.IsValid)
             {
-                _service.AbrirTransacaoParaAtualizarMovimentacao(model);
+                _service.AbrirTransacaoParaAtualizarMovimentacaoRecorrente(model);
                 return RedirectToAction("Index");
             }
             CarregarListagens(model);
@@ -85,13 +71,13 @@ namespace ControleFinanceiro.Controllers
 
         [HttpGet]
         [Route("/{controller}/{action}/{codigo}")]
-        public IActionResult BaixarOuReverter(Guid codigo)
+        public IActionResult Excluir(Guid codigo)
         {
-            _service.BaixarOuReverter(codigo);
+            _service.AbrirTransacaoParaExcluirRecorrencias(codigo);
             return RedirectToAction("Index");
         }
 
-        private void CarregarListagens(dynamic model, bool? cartaoAtivo = null, bool? categoriaAtiva = null)
+        private void CarregarListagens(dynamic model, bool? categoriaAtiva = null)
         {
             model.Tipos = _tipoService.Obter().Select(c => new SelectListItem()
             {
@@ -105,11 +91,6 @@ namespace ControleFinanceiro.Controllers
                 Value = c.Codigo.ToString()
             }).ToList();
 
-            model.CartoesDePagamento = _CartaoService.Obter(ativo: cartaoAtivo).Select(c => new SelectListItem()
-            {
-                Text = CommonHelper.FormatarDescricaoCartao(c),
-                Value = c.Codigo.ToString()
-            }).ToList();
         }
     }
 }
