@@ -12,8 +12,7 @@ namespace ControleFinanceiro.Controllers
         private readonly TipoService _tipoService;
         public MovimentacaoRecorrenteController(MovimentacaoRecorrenteService service,
             CategoriaService categoriaService,
-            TipoService tipoService,
-            CartaoService CartaoService)
+            TipoService tipoService)
         {
             _service = service;
             _tipoService = tipoService;

@@ -367,7 +367,10 @@ namespace ControleFinanceiro.Services
                 throw new Exception("Nenhum parâmetro foi fornecido para peração de exclusão de movimentação");
 
             using var conn = new SqlConnection(ConnectionString);
-            conn.Execute("delete from Movimentacao where Codigo = ISNULL(@Codigo,Codigo) and CodigoParcelamento = ISNULL(@CodigoParcelamento,CodigoParcelamento) and CodigoMovimentacaoRecorrente = ISNULL(@CodigoMovimentacaoRecorrente,CodigoMovimentacaoRecorrente)", new { @Codigo = codigo, @CodigoParcelamento = codigoParcelamento, @CodigoMovimentacaoRecorrente = codigoMovimentacaoRecorrente });
+            conn.Execute("delete from Movimentacao where Codigo = ISNULL(@Codigo,Codigo) and CodigoParcelamento = ISNULL(@CodigoParcelamento,CodigoParcelamento) and CodigoMovimentacaoRecorrente = ISNULL(@CodigoMovimentacaoRecorrente,CodigoMovimentacaoRecorrente)", new { 
+                @Codigo = codigo, 
+                @CodigoParcelamento = codigoParcelamento, 
+                @CodigoMovimentacaoRecorrente = codigoMovimentacaoRecorrente });
         }
 
         private void InsertSQL(Movimentacao movimentacao)
