@@ -3,7 +3,6 @@ using ControleFinanceiro.Models;
 using ControleFinanceiro.ValueObjects;
 using Dapper;
 using System.Data.SqlClient;
-using System.Reflection;
 using System.Text;
 using System.Transactions;
 
@@ -110,7 +109,7 @@ namespace ControleFinanceiro.Services
                     DataDaCompra = model.DataDaCompra,
                     CodigoTipo = codigoTipo,
                     CodigoParcelamento = p.Codigo,
-                    Valor = model.Valor * -1,
+                    Valor = CommonHelper.TransformarDecimalNegativoOuPositivo(model.Valor),
                     Descricao = $"Parcela {i + 1} de {model.QuantidadeParcela} - {model.Descricao}",
                     CodigoCategoria = model.CodigoCategoria,
                     CodigoCartao = model.CodigoCartao,
@@ -152,17 +151,14 @@ namespace ControleFinanceiro.Services
             scope.Complete();
         }
 
-        public void AbrirTransacaoParaExcluirParcelamento(Guid codigo)
+        public void AbrirTransacaoParaExcluirParcelamento(Guid codigoParcelamento)
         {
-            //abro a trasação no banco de dados
+            //abro a transação no banco de dados
             using TransactionScope scope = new();
-
             //exclusão de todas as movimentações desse parcelamento
-            _movimentacaoService.DeleteSQL(codigoParcelamento: codigo);
-
+            _movimentacaoService.DeleteSQL(codigoParcelamento: codigoParcelamento);
             //efetuando exclusão do parcelamento depois de excluir as movimentações
-            DeleteSQL(codigo);
-
+            DeleteSQL(codigoParcelamento);
             scope.Complete();
         }
 

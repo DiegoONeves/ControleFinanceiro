@@ -27,8 +27,7 @@ namespace ControleFinanceiro.Services
         public void AbrirTransacaoParaInserirNovaMovimentacaoRecorrente(MovimentacaoRecorrenteNovaViewModel model)
         {
             using TransactionScope scope = new();
-            var tipo = _tipoService.Obter(model.CodigoTipo).First();
-            model.Valor = tipo.Descricao != TipoDeMovimentacao.Entrada ? model.Valor * -1 : model.Valor;
+            model.Valor = _tipoService.ObterFormatoValorConformeTipo(model.CodigoTipo, model.Valor);
             var dataPrimeiraMovimentacao = CommonHelper.ConverterDateOnlyParaDateTime(model.DataDaPrimeiraMovimentacao);
             MovimentacaoRecorrente movimentacaoRecorrente = new()
             {
@@ -44,45 +43,41 @@ namespace ControleFinanceiro.Services
                 DataHora = DateTime.Now
             };
             InsertSQL(movimentacaoRecorrente);
-            InserirMovimentacoesDeRecorrencias(model, model.DataDaPrimeiraMovimentacao, movimentacaoRecorrente);
+
+            InserirMovimentacoesDeRecorrencias(model.QuantidadeMovimentacao, movimentacaoRecorrente, model.DataDaPrimeiraMovimentacao);
+
             scope.Complete();
         }
-      
-        private void InserirMovimentacoesDeRecorrencias(dynamic model, DateOnly dataDaMovimentacao, MovimentacaoRecorrente movimentacaoRecorrente)
+
+        private void InserirMovimentacoesDeRecorrencias(int qtdMovimentacoes, MovimentacaoRecorrente movimentacaoRecorrente, DateOnly dataDaMovimentacao)
         {
-            Guid codigoTipo = _tipoService.Obter().First(x => x.Descricao == TipoDeMovimentacao.Saida).Codigo;
-            for (int i = 0; i < model.QuantidadeMovimentacao; i++)
+            for (int i = 0; i < qtdMovimentacoes; i++)
             {
                 dataDaMovimentacao = dataDaMovimentacao.AddMonths(i == 0 ? 0 : 1);
                 MovimentacaoNovaViewModel m = new()
                 {
                     DataMovimentacao = dataDaMovimentacao,
-                    DataDaCompra = model.DataDaPrimeiraMovimentacao,
-                    CodigoTipo = codigoTipo,
+                    DataDaCompra = dataDaMovimentacao,
+                    CodigoTipo = movimentacaoRecorrente.CodigoTipo,
                     CodigoMovimentacaoRecorrente = movimentacaoRecorrente.Codigo,
-                    Valor = model.Valor,
-                    Descricao = $"Recorrência {i + 1} de {model.QuantidadeMovimentacao} - {model.Descricao}",
-                    CodigoCategoria = model.CodigoCategoria,
-                    DespesaFixa = model.DespesaFixa
+                    Valor = movimentacaoRecorrente.Valor,
+                    Descricao = $"Recorrência {i + 1} de {movimentacaoRecorrente.QuantidadeMovimentacao} - {movimentacaoRecorrente.Descricao}",
+                    CodigoCategoria = movimentacaoRecorrente.CodigoCategoria,
+                    DespesaFixa = movimentacaoRecorrente.DespesaFixa
                 };
                 _movimentacaoService.InserirMovimentacao(m);
             }
         }
-        public void AbrirTransacaoParaExcluirRecorrencias(Guid codigo)
+        public void AbrirTransacaoParaExcluirRecorrencias(Guid codigoMovimentacaoRecorrente)
         {
-            //abro a trasação no banco de dados
+            //abro a transação no banco de dados
             using TransactionScope scope = new();
-
-            //exclusão de todas as movimentações desse parcelamento
-            _movimentacaoService.DeleteSQL(codigoMovimentacaoRecorrente: codigo);
-
-            //efetuando exclusão do parcelamento depois de excluir as movimentações
-            DeleteSQL(codigo);
-
+            _movimentacaoService.DeleteSQL(codigoMovimentacaoRecorrente: codigoMovimentacaoRecorrente);
+            DeleteSQL(codigoMovimentacaoRecorrente);
             scope.Complete();
         }
-        public IEnumerable<MovimentacaoRecorrenteViewModel> BuscarMovimentacoesRecorrentes() => DePara(SelectSQL());       
-        
+        public IEnumerable<MovimentacaoRecorrenteViewModel> BuscarMovimentacoesRecorrentes() => DePara(SelectSQL());
+
         private IEnumerable<MovimentacaoRecorrenteViewModel> DePara(List<MovimentacaoRecorrente> movimentacoesRecorrentes)
         {
             foreach (var item in movimentacoesRecorrentes)
@@ -107,23 +102,28 @@ namespace ControleFinanceiro.Services
                 throw new Exception("O código da movimentação não foi informado");
 
             using TransactionScope scope = new();
+
+            //vou obter movimentação recorrente do banco
             var movimentacaoRecorrenteParaEditar = SelectSQL(model.Codigo).First();
-            var tipoCadastradoNaBase = _tipoService.Obter(model.CodigoTipo).First();
+
+            //exclusão de todas as movimentações desse parcelamento
+            _movimentacaoService.DeleteSQL(codigoMovimentacaoRecorrente: model.Codigo);
+
             if (model.CodigoTipo == Guid.Empty)
                 throw new Exception("O código do tipo de movimentação não foi informado");
 
             if (model.CodigoCategoria == Guid.Empty)
                 throw new Exception("O código da categoria movimentação não foi informado");
 
-            movimentacaoRecorrenteParaEditar.CodigoTipo = tipoCadastradoNaBase.Codigo;
+            movimentacaoRecorrenteParaEditar.CodigoTipo = model.CodigoTipo;
             movimentacaoRecorrenteParaEditar.CodigoCategoria = model.CodigoCategoria;
-            movimentacaoRecorrenteParaEditar.Valor = tipoCadastradoNaBase.Descricao != TipoDeMovimentacao.Entrada ? model.Valor * -1 : model.Valor;
+            movimentacaoRecorrenteParaEditar.Valor = _tipoService.ObterFormatoValorConformeTipo(model.CodigoTipo, model.Valor);
             movimentacaoRecorrenteParaEditar.DataDaPrimeiraMovimentacao = CommonHelper.ConverterDateOnlyParaDateTime(model.DataDaPrimeiraMovimentacao);
             movimentacaoRecorrenteParaEditar.DespesaFixa = model.DespesaFixa;
-            movimentacaoRecorrenteParaEditar.Valor = tipoCadastradoNaBase.Descricao == TipoDeMovimentacao.Saida ? model.Valor * -1 : model.Valor;
             movimentacaoRecorrenteParaEditar.Descricao = model.Descricao;
 
             Update(movimentacaoRecorrenteParaEditar);
+            InserirMovimentacoesDeRecorrencias(model.QuantidadeMovimentacao, movimentacaoRecorrenteParaEditar, model.DataDaPrimeiraMovimentacao);
             scope.Complete();
         }
 
@@ -181,8 +181,6 @@ namespace ControleFinanceiro.Services
                 {
                     movimentacaoRecorrente.Categoria = categoria;
                     movimentacaoRecorrente.Tipo = tipo;
-
-
                     return movimentacaoRecorrente;
 
                 }, new

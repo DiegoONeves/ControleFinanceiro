@@ -55,37 +55,6 @@
 <br />
 <table class="table table-hover table-bordered">
     <thead>
-        <tr class="table-dark">
-            <td>Data da compra</td>
-            <td>Categoria</td>
-            <td>Descrição</td>
-            <td>Valor</td>
-            <td class="text-center" colspan="2">Ações</td>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model.Movimentacoes)
-        {
-            <tr class="@(item.UltimaParcela?"table-success": item.Baixado?"table-secondary": "")">
-                <td>@item.DataDaCompra.ToShortDateString()</td>
-                <td>@item.Categoria</td>
-                <td>@item.Descricao @(item.DespesaFixa ? "(Despesa fixa)" : "")</td>
-                <td class="@item.CorDoTextDeValor">@item.Valor.ToString("C")</td>
-                <td><a asp-action="Editar" class="btn btn-primary" asp-route-codigo="@item.Codigo">Editar</a></td>
-                <td><a asp-action="BaixarOuReverter" class="@(item.Baixado?"btn btn-secondary": "btn btn-primary")" asp-route-codigo="@item.Codigo">@(item.Baixado ? "Desfazer" : "Baixar")</a></td>
-            </tr>
-        }
-        <tr class="table table-dark">
-            <td colspan="4">Total</td>
-            <td colspan="2">@Model.Valor.ToString("C")</td>
-        </tr>
-    </tbody>
-</table>
-<br />
-<br />
-
-<table class="table table-hover table-bordered">
-    <thead>
         <tr class="table table-dark">
             <td class="text-center" colspan="2">Movimentações por categoria</td>
         </tr>
@@ -139,4 +108,36 @@
         }
     </tbody>
 </table>
+
+<br />
+<br />
+<table class="table table-hover table-bordered">
+    <thead>
+        <tr class="table-dark">
+            <td>Data da compra</td>
+            <td>Categoria</td>
+            <td>Descrição</td>
+            <td>Valor</td>
+            <td class="text-center" colspan="2">Ações</td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Movimentacoes)
+        {
+            <tr class="@(item.UltimaParcela?"table-success": item.Baixado?"table-secondary": "")">
+                <td>@item.DataDaCompra.ToShortDateString()</td>
+                <td>@item.Categoria</td>
+                <td>@item.Descricao @(item.DespesaFixa ? "(Despesa fixa)" : "")</td>
+                <td class="@item.CorDoTextDeValor">@item.Valor.ToString("C")</td>
+                <td><a asp-action="Editar" class="btn btn-primary" asp-route-codigo="@item.Codigo">Editar</a></td>
+                <td><a asp-action="BaixarOuReverter" class="@(item.Baixado?"btn btn-secondary": "btn btn-primary")" asp-route-codigo="@item.Codigo">@(item.Baixado ? "Desfazer" : "Baixar")</a></td>
+            </tr>
+        }
+        <tr class="table table-dark">
+            <td colspan="4">Total</td>
+            <td colspan="2">@Model.Valor.ToString("C")</td>
+        </tr>
+    </tbody>
+</table>
+
 

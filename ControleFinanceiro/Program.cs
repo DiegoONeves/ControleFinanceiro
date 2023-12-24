@@ -5,13 +5,13 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<MovimentacaoService>();
-builder.Services.AddScoped<MovimentacaoRecorrenteService>();
 builder.Services.AddScoped<ParcelamentoService>();
 builder.Services.AddScoped<TipoService>();
 builder.Services.AddScoped<CategoriaService>();
 builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<CartaoBandeiraService>();
 builder.Services.AddScoped<CartaoService>();
+builder.Services.AddScoped<MovimentacaoRecorrenteService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

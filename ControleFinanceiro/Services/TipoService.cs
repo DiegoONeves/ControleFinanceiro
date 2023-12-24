@@ -2,6 +2,7 @@
 using ControleFinanceiro.ValueObjects;
 using Dapper;
 using System.Data.SqlClient;
+using System.Reflection;
 
 namespace ControleFinanceiro.Services
 {
@@ -21,5 +22,9 @@ namespace ControleFinanceiro.Services
             using var conn = new SqlConnection(ConnectionString);
             return conn.Query<Tipo>("SELECT * FROM Tipo (NOLOCK) WHERE Codigo = ISNULL(@Codigo,Codigo)", new { @Codigo = codigo }).ToList();
         }
+
+        public decimal ObterFormatoValorConformeTipo(Guid codigoTipo, decimal valor) 
+            => Obter(codigo: codigoTipo).First().Descricao != TipoDeMovimentacao.Entrada ? CommonHelper.TransformarDecimalNegativoOuPositivo(valor) : valor;
+
     }
 }

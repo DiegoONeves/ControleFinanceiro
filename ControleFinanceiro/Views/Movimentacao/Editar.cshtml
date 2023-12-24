@@ -11,8 +11,8 @@
 <form asp-action="Editar" method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     @Html.HiddenFor(x=>x.Codigo)
-    @Html.HiddenFor(x=>x.CodigoParcelamento)
-    @if (Model.CodigoParcelamento is null)
+    @Html.HiddenFor(x=>x.CodigoTipo)
+    @if (Model.CodigoParcelamento is null && Model.CodigoMovimentacaoRecorrente is null)
     {
         <div class="mb-2">
             <label asp-for="CodigoTipo" class="control-label"></label>
@@ -61,10 +61,9 @@
             <span asp-validation-for="Valor" class="text-danger"></span>
         </div>
     }
-    else
+    else if (Model.CodigoParcelamento is not null)
     {
-        @Html.HiddenFor(x=>x.CodigoTipo)
-        @Html.HiddenFor(x=>x.DataDaCompra)
+        @Html.HiddenFor(x=>x.CodigoParcelamento)
         <div class="mb-2">
             <label asp-for="CodigoTipo" class="control-label"></label>
             <select asp-for="CodigoTipo" class="form-control" asp-items="@Model.Tipos" disabled>
@@ -92,6 +91,36 @@
             <label asp-for="DataDaCompra" class="control-label"></label>
             <input asp-for="DataDaCompra" class="form-control" disabled />
             <span asp-validation-for="DataDaCompra" class="text-danger"></span>
+        </div>
+        <div class="mb-2">
+            <label asp-for="DataMovimentacao" class="control-label"></label>
+            <input asp-for="DataMovimentacao" class="form-control" disabled />
+        </div>
+        <div class="mb-2">
+            <label asp-for="Valor" class="control-label"></label>
+            <input asp-for="Valor" class="form-control" />
+            <span asp-validation-for="Valor" class="text-danger"></span>
+        </div>
+    }
+    else if (Model.CodigoMovimentacaoRecorrente is not null)
+    {
+        @Html.HiddenFor(x=>x.CodigoMovimentacaoRecorrente)
+        <div class="mb-2">
+            <label asp-for="CodigoTipo" class="control-label"></label>
+            <select asp-for="CodigoTipo" class="form-control" asp-items="@Model.Tipos" disabled>
+                <option selected value="">Selecione um tipo de movimentação</option>
+            </select>
+        </div>
+        <div class="mb-2">
+            <label asp-for="CodigoCategoria" class="control-label"></label>
+            <select asp-for="CodigoCategoria" class="form-control" asp-items="@Model.Categorias" disabled>
+                <option selected value="">Selecione uma categoria</option>
+            </select>
+        </div>
+        <div class="mb-2">
+            <label asp-for="Descricao" class="control-label"></label>
+            <input asp-for="Descricao" class="form-control" />
+            <span asp-validation-for="Descricao" class="text-danger"></span>
         </div>
         <div class="mb-2">
             <label asp-for="DataMovimentacao" class="control-label"></label>

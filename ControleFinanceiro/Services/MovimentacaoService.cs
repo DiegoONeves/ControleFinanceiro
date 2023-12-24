@@ -27,8 +27,7 @@ namespace ControleFinanceiro.Services
         public void AbrirTransacaoParaInserirNovaMovimentacao(MovimentacaoNovaViewModel model)
         {
             using TransactionScope scope = new();
-            var tipo = _tipoService.Obter(model.CodigoTipo).First();
-            model.Valor = tipo.Descricao != TipoDeMovimentacao.Entrada ? model.Valor * -1 : model.Valor;
+            model.Valor = _tipoService.ObterFormatoValorConformeTipo(model.CodigoTipo, model.Valor);
             model.DataMovimentacao = model.CodigoCartao is null ? model.DataDaCompra : _cartaoService.ObterDataDaParcela(model.CodigoCartao.Value, model.DataDaCompra);
             InserirMovimentacao(model);
             scope.Complete();
@@ -96,7 +95,6 @@ namespace ControleFinanceiro.Services
             resultado.ValorTotalSaida = movimentacoes.Where(x => x.Valor < 0).Select(x => x.Valor).Sum();
             resultado.ValorTotalEntrada = movimentacoes.Where(x => x.Valor > 0).Select(x => x.Valor).Sum();
             resultado.ValorTotalDeParcelamento = movimentacoes.Where(x => x.Valor < 0 && x.CodigoParcelamento is not null).Select(x => x.Valor).Sum();
-
             resultado.Valor = movimentacoes.Select(x => x.Valor).Sum();
 
             var categorias = movimentacoes.Where(x => x.Tipo.Descricao == TipoDeMovimentacao.Saida).Select(x => x.Categoria.Descricao).Distinct();
@@ -106,8 +104,8 @@ namespace ControleFinanceiro.Services
                 resultado.TotaisPorCategoria.Add(new DashboardDividaPorCategoriaViewModel
                 {
                     Categoria = item,
-                    Valor = CommonHelper.TransformarDecimalNegativoEmPositivo(movimentacoes.Where(x => x.Tipo.Descricao == TipoDeMovimentacao.Saida && x.Categoria.Descricao == item).Select(x => x.Valor).Sum()),
-                    ValorMesAnterior = CommonHelper.TransformarDecimalNegativoEmPositivo(movimentacoesDoMesAnterior.Where(x => x.Categoria.Descricao == item).Select(x => x.Valor).Sum())
+                    Valor = CommonHelper.TransformarDecimalNegativoOuPositivo(movimentacoes.Where(x => x.Tipo.Descricao == TipoDeMovimentacao.Saida && x.Categoria.Descricao == item).Select(x => x.Valor).Sum()),
+                    ValorMesAnterior = CommonHelper.TransformarDecimalNegativoOuPositivo(movimentacoesDoMesAnterior.Where(x => x.Categoria.Descricao == item).Select(x => x.Valor).Sum())
                 });
             }
 
@@ -119,7 +117,7 @@ namespace ControleFinanceiro.Services
                 resultado.TotaisPorCategoriaParcelamentos.Add(new DashboardDividaPorCategoriaViewModel
                 {
                     Categoria = item,
-                    Valor = CommonHelper.TransformarDecimalNegativoEmPositivo(movimentacoes.Where(x => x.CodigoParcelamento is not null && x.Categoria.Descricao == item).Select(x => x.Valor).Sum())
+                    Valor = CommonHelper.TransformarDecimalNegativoOuPositivo(movimentacoes.Where(x => x.CodigoParcelamento is not null && x.Categoria.Descricao == item).Select(x => x.Valor).Sum())
                 });
             }
 
@@ -127,7 +125,7 @@ namespace ControleFinanceiro.Services
             var categoriasPais = movimentacoes.Where(x => x.Categoria?.CategoriaPai is not null).Select(x => x.Categoria.CategoriaPai.Descricao).Distinct().ToList();
             foreach (var catPai in categoriasPais)
             {
-                var somatoria = CommonHelper.TransformarDecimalNegativoEmPositivo(movimentacoes.Where(x => x.Categoria.CategoriaPai != null && x.Categoria.CategoriaPai.Descricao == catPai).Select(x => x.Valor).Sum());
+                var somatoria = CommonHelper.TransformarDecimalNegativoOuPositivo(movimentacoes.Where(x => x.Categoria.CategoriaPai != null && x.Categoria.CategoriaPai.Descricao == catPai).Select(x => x.Valor).Sum());
                 resultado.TotaisPorCategoriaPai.Add(new DashboardDividaPorCategoriaViewModel
                 {
                     Categoria = catPai,
@@ -151,7 +149,6 @@ namespace ControleFinanceiro.Services
         {
             foreach (var item in movimentacoes)
             {
-
                 decimal valorAmortizacao = 0;
                 if (item.CodigoParcelamento is not null)
                     valorAmortizacao = GerarValorAmortizacao(item);
@@ -185,7 +182,7 @@ namespace ControleFinanceiro.Services
             using TransactionScope scope = new();
             var movimentacaoParaEditar = SelectSQL(model.Codigo).First();
             var tipoCadastradoNaBase = _tipoService.Obter(model.CodigoTipo).First();
-            if (movimentacaoParaEditar.CodigoParcelamento is null)
+            if (movimentacaoParaEditar.MovimentacaoIsAvulsa())
             {
                 if (model.CodigoTipo == Guid.Empty)
                     throw new Exception("O código do tipo de movimentação não foi informado");
@@ -200,15 +197,10 @@ namespace ControleFinanceiro.Services
                     movimentacaoParaEditar.CodigoCartao = model.CodigoCartao;
                     movimentacaoParaEditar.DataMovimentacao = CommonHelper.ConverterDateOnlyParaDateTime(model.CodigoCartao is null ? model.DataDaCompra : _cartaoService.ObterDataDaParcela(model.CodigoCartao.Value, model.DataDaCompra));
                 }
-                movimentacaoParaEditar.Valor = tipoCadastradoNaBase.Descricao != TipoDeMovimentacao.Entrada ? model.Valor * -1 : model.Valor;
                 movimentacaoParaEditar.DataDaCompra = CommonHelper.ConverterDateOnlyParaDateTime(model.DataDaCompra);
                 movimentacaoParaEditar.DespesaFixa = model.DespesaFixa;
             }
-            else
-            {
-                //se for parcelamento
-                movimentacaoParaEditar.Valor = model.Valor * -1;
-            }
+            movimentacaoParaEditar.Valor = tipoCadastradoNaBase.Descricao != TipoDeMovimentacao.Entrada ? model.Valor * -1 : model.Valor;
             movimentacaoParaEditar.Descricao = model.Descricao;
 
             Update(movimentacaoParaEditar);
@@ -222,6 +214,7 @@ namespace ControleFinanceiro.Services
             {
                 Codigo = movimentacaoParaEditar.Codigo,
                 CodigoParcelamento = movimentacaoParaEditar.CodigoParcelamento,
+                CodigoMovimentacaoRecorrente = movimentacaoParaEditar.CodigoMovimentacaoRecorrente,
                 DataDaCompra = DateOnly.FromDateTime(movimentacaoParaEditar.DataDaCompra),
                 CodigoCartao = movimentacaoParaEditar.CodigoCartao,
                 CodigoCategoria = movimentacaoParaEditar.CodigoCategoria,
@@ -363,14 +356,30 @@ namespace ControleFinanceiro.Services
         }
         public void DeleteSQL(Guid? codigo = null, Guid? codigoParcelamento = null, Guid? codigoMovimentacaoRecorrente = null)
         {
-            if (codigo is null && codigoParcelamento is null && codigoMovimentacaoRecorrente is null)
+            var parametros = new List<Guid?> { codigo, codigoParcelamento, codigoMovimentacaoRecorrente };
+
+            StringBuilder sql = new();
+            sql.AppendLine(@"delete from Movimentacao where");
+
+            if (!parametros.Any(x => x.HasValue))
                 throw new Exception("Nenhum parâmetro foi fornecido para peração de exclusão de movimentação");
 
+            if (parametros[0] is not null)
+                sql.AppendLine("Codigo = @Codigo");
+
+            else if (parametros[1] is not null)
+                sql.AppendLine("CodigoParcelamento = @CodigoParcelamento");
+
+            else if (parametros[2] is not null)
+                sql.AppendLine("CodigoMovimentacaoRecorrente = @CodigoMovimentacaoRecorrente");
+
             using var conn = new SqlConnection(ConnectionString);
-            conn.Execute("delete from Movimentacao where Codigo = ISNULL(@Codigo,Codigo) and CodigoParcelamento = ISNULL(@CodigoParcelamento,CodigoParcelamento) and CodigoMovimentacaoRecorrente = ISNULL(@CodigoMovimentacaoRecorrente,CodigoMovimentacaoRecorrente)", new { 
-                @Codigo = codigo, 
-                @CodigoParcelamento = codigoParcelamento, 
-                @CodigoMovimentacaoRecorrente = codigoMovimentacaoRecorrente });
+            conn.Execute(sql.ToString(), new
+            {
+                @Codigo = parametros[0],
+                @CodigoParcelamento = parametros[1],
+                @CodigoMovimentacaoRecorrente = parametros[2]
+            });
         }
 
         private void InsertSQL(Movimentacao movimentacao)

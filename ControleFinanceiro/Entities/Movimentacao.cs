@@ -21,6 +21,8 @@
         public MovimentacaoRecorrente? MovimentacaoRecorrente { get; set; } = null;
         public bool DespesaFixa { get; set; } = false;
 
+        public bool MovimentacaoIsAvulsa() => CodigoParcelamento is null && CodigoMovimentacaoRecorrente is null;
+
         public override string ToString()
         {
             return $"Codigo: {Codigo} - Valor: {Valor.ToString("C")}";
