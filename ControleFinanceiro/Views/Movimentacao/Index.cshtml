@@ -33,16 +33,10 @@
             <h6>Saídas <span class="badge bg-danger">@Model.ValorTotalSaida.ToString("C")</span></h6>
         </div>
         <div class="col">
-            <h6>Entradas <span class="badge bg-success">@Model.ValorTotalEntrada.ToString("C")</span></h6>
-        </div>
-        <div class="col">
             <h6>Liberado <span class="badge bg-success">@Model.ValorAmortizadoNoMes.ToString("C")</span></h6>
         </div>
         <div class="col">
             <h6>Parcelas <span class="badge bg-primary">@Model.ValorTotalDeParcelamento.ToString("C")</span></h6>
-        </div>
-        <div class="col">
-            <h6>Saldo <span class="badge bg-primary">@((Model.ValorTotalEntrada + Model.ValorTotalSaida).ToString("C"))</span></h6>
         </div>
     </div>
 </div>
