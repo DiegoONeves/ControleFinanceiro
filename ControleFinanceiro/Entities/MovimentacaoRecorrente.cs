@@ -10,7 +10,6 @@
         public DateTime DataHora { get; set; }
         public Categoria Categoria { get; set; } = new();
         public Tipo Tipo { get; set; } = new();
-        public bool DespesaFixa { get; set; } = false;
         public DateTime DataDaPrimeiraMovimentacao { get; set; }
         public short QuantidadeMovimentacao { get; set; }
         public DateTime DataDaUltimaMovimentacao { get; set; }

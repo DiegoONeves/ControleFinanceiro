@@ -33,8 +33,6 @@ namespace ControleFinanceiro.Models
 
         public Guid? CodigoParcelamento { get; set; }
         public Guid? CodigoMovimentacaoRecorrente { get; set; }
-        [Display(Name = "Despesa fixa?")]
-        public bool DespesaFixa { get; set; }
 
     }
 }

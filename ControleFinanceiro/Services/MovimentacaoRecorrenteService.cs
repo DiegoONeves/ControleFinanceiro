@@ -35,7 +35,6 @@ namespace ControleFinanceiro.Services
                 DataDaPrimeiraMovimentacao = dataPrimeiraMovimentacao,
                 DataDaUltimaMovimentacao = dataPrimeiraMovimentacao.AddMonths(model.QuantidadeMovimentacao - 1),
                 Descricao = model.Descricao,
-                DespesaFixa = model.DespesaFixa,
                 QuantidadeMovimentacao = model.QuantidadeMovimentacao,
                 CodigoCategoria = model.CodigoCategoria,
                 CodigoTipo = model.CodigoTipo,
@@ -62,8 +61,7 @@ namespace ControleFinanceiro.Services
                     CodigoMovimentacaoRecorrente = movimentacaoRecorrente.Codigo,
                     Valor = movimentacaoRecorrente.Valor,
                     Descricao = $"Recorrência {i + 1} de {movimentacaoRecorrente.QuantidadeMovimentacao} - {movimentacaoRecorrente.Descricao}",
-                    CodigoCategoria = movimentacaoRecorrente.CodigoCategoria,
-                    DespesaFixa = movimentacaoRecorrente.DespesaFixa
+                    CodigoCategoria = movimentacaoRecorrente.CodigoCategoria
                 };
                 _movimentacaoService.InserirMovimentacao(m);
             }
@@ -119,7 +117,6 @@ namespace ControleFinanceiro.Services
             movimentacaoRecorrenteParaEditar.CodigoCategoria = model.CodigoCategoria;
             movimentacaoRecorrenteParaEditar.Valor = _tipoService.ObterFormatoValorConformeTipo(model.CodigoTipo, model.Valor);
             movimentacaoRecorrenteParaEditar.DataDaPrimeiraMovimentacao = CommonHelper.ConverterDateOnlyParaDateTime(model.DataDaPrimeiraMovimentacao);
-            movimentacaoRecorrenteParaEditar.DespesaFixa = model.DespesaFixa;
             movimentacaoRecorrenteParaEditar.Descricao = model.Descricao;
 
             Update(movimentacaoRecorrenteParaEditar);
@@ -137,7 +134,6 @@ namespace ControleFinanceiro.Services
                 QuantidadeMovimentacao = movimentacaoParaEditar.QuantidadeMovimentacao,
                 CodigoCategoria = movimentacaoParaEditar.CodigoCategoria,
                 CodigoTipo = movimentacaoParaEditar.CodigoTipo,
-                DespesaFixa = movimentacaoParaEditar.DespesaFixa,
                 Descricao = movimentacaoParaEditar.Descricao,
                 Valor = Math.Abs(movimentacaoParaEditar.Valor)
             };
@@ -158,7 +154,7 @@ namespace ControleFinanceiro.Services
                 throw new Exception("O código da categoria movimentação não foi informado");
 
             using var conn = new SqlConnection(ConnectionString);
-            conn.Execute("UPDATE MovimentacaoRecorrente SET DespesaFixa = @DespesaFixa,QuantidadeMovimentacao = @QuantidadeMovimentacao, DataDaPrimeiraMovimentacao = @DataDaPrimeiraMovimentacao, DataDaUltimaMovimentacao = @DataDaUltimaMovimentacao, Valor = @Valor,CodigoCategoria = @CodigoCategoria,CodigoTipo = @CodigoTipo,Descricao = @Descricao WHERE Codigo = @Codigo", movimentacaoRecorrente);
+            conn.Execute("UPDATE MovimentacaoRecorrente SET QuantidadeMovimentacao = @QuantidadeMovimentacao, DataDaPrimeiraMovimentacao = @DataDaPrimeiraMovimentacao, DataDaUltimaMovimentacao = @DataDaUltimaMovimentacao, Valor = @Valor,CodigoCategoria = @CodigoCategoria,CodigoTipo = @CodigoTipo,Descricao = @Descricao WHERE Codigo = @Codigo", movimentacaoRecorrente);
         }
 
         public List<MovimentacaoRecorrente> SelectSQL(
@@ -203,7 +199,7 @@ namespace ControleFinanceiro.Services
         private void InsertSQL(MovimentacaoRecorrente movimentacaoRecorrente)
         {
             var conn = new SqlConnection(ConnectionString);
-            conn.Execute("insert into MovimentacaoRecorrente (QuantidadeMovimentacao,DespesaFixa,Codigo,DataDaPrimeiraMovimentacao,DataDaUltimaMovimentacao,DataHora,Valor,CodigoCategoria,CodigoTipo,Descricao) values (@QuantidadeMovimentacao,@DespesaFixa,@Codigo,@DataDaPrimeiraMovimentacao,@DataDaUltimaMovimentacao,@DataHora,@Valor,@CodigoCategoria,@CodigoTipo,@Descricao)", movimentacaoRecorrente);
+            conn.Execute("insert into MovimentacaoRecorrente (QuantidadeMovimentacao,Codigo,DataDaPrimeiraMovimentacao,DataDaUltimaMovimentacao,DataHora,Valor,CodigoCategoria,CodigoTipo,Descricao) values (@QuantidadeMovimentacao,@Codigo,@DataDaPrimeiraMovimentacao,@DataDaUltimaMovimentacao,@DataHora,@Valor,@CodigoCategoria,@CodigoTipo,@Descricao)", movimentacaoRecorrente);
         }
 
         #endregion

@@ -22,9 +22,6 @@ namespace ControleFinanceiro.Models
         [Required(ErrorMessage = "O campo {0} é obrigatório")]
         public decimal Valor { get; set; }
 
-        [Display(Name = "Despesa fixa?")]
-        public bool DespesaFixa { get; set; }
-
         [Display(Name = "Data da primeira movimentação")]
         [Required(ErrorMessage = "O campo {0} é obrigatório")]
         public DateOnly DataDaPrimeiraMovimentacao { get; set; }

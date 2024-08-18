@@ -34,7 +34,5 @@ namespace ControleFinanceiro.Models
         [Display(Name = "Data da última parcela")]
         public DateOnly DataUltimaParcela { get; set; }
 
-        [Display(Name = "Despesa fixa?")]
-        public bool DespesaFixa { get; set; }
     }
 }

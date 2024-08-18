@@ -91,6 +91,14 @@ namespace ControleFinanceiro.Controllers
             return RedirectToAction("Index");
         }
 
+        [HttpGet]
+        [Route("/{controller}/{action}/{codigo}")]
+        public IActionResult Excluir(Guid codigo)
+        {
+            _service.AbrirTransacaoParaExcluirMovimentacao(codigo);
+            return RedirectToAction("Index");
+        }
+
         private void CarregarListagens(dynamic model, bool? cartaoAtivo = null, bool? categoriaAtiva = null)
         {
             model.Tipos = _tipoService.Obter().Select(c => new SelectListItem()

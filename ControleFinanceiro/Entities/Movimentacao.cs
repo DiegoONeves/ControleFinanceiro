@@ -19,7 +19,6 @@
         public Cartao? Cartao { get; set; } = null;
         public Parcelamento? Parcelamento { get; set; } = null;
         public MovimentacaoRecorrente? MovimentacaoRecorrente { get; set; } = null;
-        public bool DespesaFixa { get; set; } = false;
 
         public bool MovimentacaoIsAvulsa() => CodigoParcelamento is null && CodigoMovimentacaoRecorrente is null;
 

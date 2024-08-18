@@ -29,9 +29,6 @@ namespace ControleFinanceiro.Models
         [Required(ErrorMessage = "O campo {0} é obrigatório")]
         public DateOnly DataDaCompra { get; set; }
 
-        [Display(Name = "Despesa fixa?")]
-        public bool DespesaFixa { get; set; }
-
 
     }
 }

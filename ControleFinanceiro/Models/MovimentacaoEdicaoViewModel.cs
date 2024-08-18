@@ -36,8 +36,6 @@ namespace ControleFinanceiro.Models
         public DateOnly DataMovimentacao { get; set; }
         public bool EstadoDoCampoCodigoCartaoDeCredito { get; set; }
 
-        [Display(Name = "Despesa fixa?")]
-        public bool DespesaFixa { get; set; }
 
     }
 }

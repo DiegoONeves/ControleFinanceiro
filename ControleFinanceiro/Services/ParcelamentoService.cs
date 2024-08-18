@@ -28,10 +28,14 @@ namespace ControleFinanceiro.Services
         {
             List<ParcelamentoViewModel> parcelamentosTemp = new();
             List<ParcelamentoViewModel> parcelamentosFinal = new();
+            int contadorAtivos = 1;
             foreach (var item in SelectSQL().OrderByDescending(x => x.DataDaCompra))
             {
+                bool finalizado = item.DataUltimaParcela <= DateTime.Now;
+
                 parcelamentosTemp.Add(new ParcelamentoViewModel
                 {
+                    NumeroParcelamentoAtivo = !finalizado ? (contadorAtivos++).ToString().PadLeft(2, '0') : "-",
                     Codigo = item.Codigo,
                     Categoria = item.Categoria.Descricao,
                     CodigoCartao = item.CodigoCartao,
@@ -42,7 +46,7 @@ namespace ControleFinanceiro.Services
                     DataUltimaParcela = item.DataUltimaParcela,
                     QuantidadeParcela = item.QuantidadeParcela,
                     Valor = item.Valor,
-                    Finalizado = item.DataUltimaParcela <= DateTime.Now,
+                    Finalizado = finalizado,
                     MeioDeParcelamento = CommonHelper.FormatarDescricaoCartao(item.Cartao)
                 });
             }
@@ -62,7 +66,6 @@ namespace ControleFinanceiro.Services
             r.CodigoCartao = resultado.CodigoCartao;
             r.Codigo = resultado.Codigo;
             r.Valor = resultado.Valor;
-            r.DespesaFixa = resultado.DespesaFixa;
             r.CodigoCategoria = resultado.CodigoCategoria;
             r.Descricao = resultado.Descricao;
             r.QuantidadeParcela = resultado.QuantidadeParcela;
@@ -87,7 +90,6 @@ namespace ControleFinanceiro.Services
                     DataPrimeiraParcela = dataPrimeiraParcela,
                     DataUltimaParcela = dataPrimeiraParcela.AddMonths(model.QuantidadeParcela - 1),
                     Valor = model.Valor,
-                    DespesaFixa = model.DespesaFixa,
                     DataHora = DateTime.Now
                 };
                 InsertSQL(p);
@@ -112,8 +114,7 @@ namespace ControleFinanceiro.Services
                     Valor = CommonHelper.TransformarDecimalNegativoOuPositivo(model.Valor),
                     Descricao = $"Parcela {i + 1} de {model.QuantidadeParcela} - {model.Descricao}",
                     CodigoCategoria = model.CodigoCategoria,
-                    CodigoCartao = model.CodigoCartao,
-                    DespesaFixa = model.DespesaFixa,
+                    CodigoCartao = model.CodigoCartao
                 };
                 _movimentacaoService.InserirMovimentacao(m);
             }
@@ -139,7 +140,6 @@ namespace ControleFinanceiro.Services
             parcelamentoEdicao.DataUltimaParcela = dataPrimeiraParcela.AddMonths(model.QuantidadeParcela - 1);
             parcelamentoEdicao.QuantidadeParcela = model.QuantidadeParcela;
             parcelamentoEdicao.DataDaCompra = dataDaCompra;
-            parcelamentoEdicao.DespesaFixa = model.DespesaFixa;
 
             //edito o parcelamento
             UpdateSQL(parcelamentoEdicao);
@@ -170,7 +170,6 @@ namespace ControleFinanceiro.Services
             StringBuilder sql = new();
             sql.AppendLine(@"UPDATE Parcelamento");
             sql.AppendLine("SET CodigoCategoria = @CodigoCategoria,");
-            sql.AppendLine("DespesaFixa = @DespesaFixa,");
             sql.AppendLine("Descricao = @Descricao,");
             sql.AppendLine("QuantidadeParcela = @QuantidadeParcela,");
             sql.AppendLine("DataPrimeiraParcela = @DataPrimeiraParcela,");
@@ -213,7 +212,7 @@ namespace ControleFinanceiro.Services
         public void InsertSQL(Parcelamento p)
         {
             using var conn = new SqlConnection(ConnectionString);
-            conn.Execute("insert into Parcelamento (DespesaFixa,Codigo,DataDaCompra,QuantidadeParcela,DataPrimeiraParcela,DataHora,Valor,CodigoCategoria,Descricao,DataUltimaParcela) values (@DespesaFixa,@Codigo,@DataDaCompra,@QuantidadeParcela,@DataPrimeiraParcela,@DataHora,@Valor,@CodigoCategoria,@Descricao,@DataUltimaParcela)", p);
+            conn.Execute("insert into Parcelamento (CodigoCartao,Codigo,DataDaCompra,QuantidadeParcela,DataPrimeiraParcela,DataHora,Valor,CodigoCategoria,Descricao,DataUltimaParcela) values (@CodigoCartao,@Codigo,@DataDaCompra,@QuantidadeParcela,@DataPrimeiraParcela,@DataHora,@Valor,@CodigoCategoria,@Descricao,@DataUltimaParcela)", p);
         }
 
         public void DeleteSQL(Guid codigo)

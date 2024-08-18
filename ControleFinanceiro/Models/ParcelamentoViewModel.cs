@@ -2,6 +2,7 @@
 {
     public class ParcelamentoViewModel
     {
+        public string NumeroParcelamentoAtivo { get; set; }
         public string MeioDeParcelamento { get; set; }
         public Guid Codigo { get; set; }
         public Guid? CodigoCartao { get; set; } = null;

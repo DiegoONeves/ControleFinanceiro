@@ -14,6 +14,5 @@
         public DateTime DataDaCompra { get; set; }
         public Cartao? Cartao { get; set; } = null;
         public Categoria Categoria { get; set; } = new();
-        public bool DespesaFixa { get; set; } = false;
     }
 }

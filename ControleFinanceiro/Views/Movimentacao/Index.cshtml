@@ -30,24 +30,19 @@
 <div class="container text-center">
     <div class="row">
         <div class="col">
-            <h4>Saídas <span class="badge bg-danger">@Model.ValorTotalSaida.ToString("C")</span></h4>
+            <h6>Saídas <span class="badge bg-danger">@Model.ValorTotalSaida.ToString("C")</span></h6>
         </div>
         <div class="col">
-            <h4>Entradas <span class="badge bg-success">@Model.ValorTotalEntrada.ToString("C")</span></h4>
+            <h6>Entradas <span class="badge bg-success">@Model.ValorTotalEntrada.ToString("C")</span></h6>
         </div>
         <div class="col">
-            <h4>Parcelamentos <span class="badge bg-info">@Model.ValorTotalDeParcelamento.ToString("C")</span></h4>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col">
-            <h4>Valor liberado <span class="badge bg-info"> @Model.ValorAmortizadoNoMes.ToString("C")</span></h4>
+            <h6>Liberado <span class="badge bg-success">@Model.ValorAmortizadoNoMes.ToString("C")</span></h6>
         </div>
         <div class="col">
-            <h4>Despesas fixas <span class="badge bg-info">@Model.ValorContasEssenciais.ToString("C")</span></h4>
+            <h6>Parcelas <span class="badge bg-primary">@Model.ValorTotalDeParcelamento.ToString("C")</span></h6>
         </div>
         <div class="col">
-            <h4>Despesas variáveis <span class="badge bg-danger">@Model.ValorContasNaoEssenciais.ToString("C")</span></h4>
+            <h6>Saldo <span class="badge bg-primary">@((Model.ValorTotalEntrada + Model.ValorTotalSaida).ToString("C"))</span></h6>
         </div>
     </div>
 </div>
@@ -118,7 +113,7 @@
             <td>Categoria</td>
             <td>Descrição</td>
             <td>Valor</td>
-            <td class="text-center" colspan="2">Ações</td>
+            <td class="text-center" colspan="3">Ações</td>
         </tr>
     </thead>
     <tbody>
@@ -127,15 +122,16 @@
             <tr class="@(item.UltimaParcela?"table-success": item.Baixado?"table-secondary": "")">
                 <td>@item.DataDaCompra.ToShortDateString()</td>
                 <td>@item.Categoria</td>
-                <td>@item.Descricao @(item.DespesaFixa ? "(Despesa fixa)" : "")</td>
+                <td>@item.Descricao</td>
                 <td class="@item.CorDoTextDeValor">@item.Valor.ToString("C")</td>
                 <td><a asp-action="Editar" class="btn btn-primary" asp-route-codigo="@item.Codigo">Editar</a></td>
                 <td><a asp-action="BaixarOuReverter" class="@(item.Baixado?"btn btn-secondary": "btn btn-primary")" asp-route-codigo="@item.Codigo">@(item.Baixado ? "Desfazer" : "Baixar")</a></td>
+                <td><a asp-action="Excluir" class="btn btn-danger" asp-route-codigo="@item.Codigo">Excluir</a></td>
             </tr>
         }
         <tr class="table table-dark">
             <td colspan="4">Total</td>
-            <td colspan="2">@Model.Valor.ToString("C")</td>
+            <td colspan="3">@Model.Valor.ToString("C")</td>
         </tr>
     </tbody>
 </table>

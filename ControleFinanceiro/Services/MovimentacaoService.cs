@@ -42,7 +42,6 @@ namespace ControleFinanceiro.Services
                 CodigoParcelamento = model.CodigoParcelamento,
                 CodigoMovimentacaoRecorrente = model.CodigoMovimentacaoRecorrente,
                 Descricao = model.Descricao,
-                DespesaFixa = model.DespesaFixa,
                 CodigoCategoria = model.CodigoCategoria,
                 CodigoTipo = model.CodigoTipo,
                 DataMovimentacao = CommonHelper.ConverterDateOnlyParaDateTime(model.DataMovimentacao),
@@ -138,12 +137,17 @@ namespace ControleFinanceiro.Services
             resultado.TotaisPorCategoriaPai = resultado.TotaisPorCategoriaPai.OrderByDescending(x => x.Valor).ToList();
             resultado.TotaisPorCategoriaParcelamentos = resultado.TotaisPorCategoriaParcelamentos.OrderByDescending(x => x.Valor).ToList();
             resultado.ValorAmortizadoNoMes = resultado.Movimentacoes.Where(x => x.UltimaParcela).Select(x => x.Valor).Sum();
-            resultado.ValorContasNaoEssenciais = resultado.Movimentacoes.Where(x => !x.DespesaFixa && x.Valor < 0).Select(x => x.Valor).Sum();
-            resultado.ValorContasEssenciais = resultado.Movimentacoes.Where(x => x.DespesaFixa && x.Valor < 0).Select(x => x.Valor).Sum();
 
             return resultado;
         }
 
+        public void AbrirTransacaoParaExcluirMovimentacao(Guid codigo)
+        {
+            //abro a transação no banco de dados
+            using TransactionScope scope = new();
+            DeleteSQL(codigo: codigo);
+            scope.Complete();
+        }
 
         private IEnumerable<MovimentacaoItemViewModel> DePara(List<Movimentacao> movimentacoes)
         {
@@ -165,7 +169,6 @@ namespace ControleFinanceiro.Services
                     Descricao = item.Descricao,
                     Valor = item.Valor,
                     Baixado = item.Baixado,
-                    DespesaFixa = item.DespesaFixa,
                     UltimaParcela = valorAmortizacao < 0
                 };
             }
@@ -198,7 +201,6 @@ namespace ControleFinanceiro.Services
                     movimentacaoParaEditar.DataMovimentacao = CommonHelper.ConverterDateOnlyParaDateTime(model.CodigoCartao is null ? model.DataDaCompra : _cartaoService.ObterDataDaParcela(model.CodigoCartao.Value, model.DataDaCompra));
                 }
                 movimentacaoParaEditar.DataDaCompra = CommonHelper.ConverterDateOnlyParaDateTime(model.DataDaCompra);
-                movimentacaoParaEditar.DespesaFixa = model.DespesaFixa;
             }
             movimentacaoParaEditar.Valor = tipoCadastradoNaBase.Descricao != TipoDeMovimentacao.Entrada ? model.Valor * -1 : model.Valor;
             movimentacaoParaEditar.Descricao = model.Descricao;
@@ -220,7 +222,6 @@ namespace ControleFinanceiro.Services
                 CodigoCategoria = movimentacaoParaEditar.CodigoCategoria,
                 CodigoTipo = movimentacaoParaEditar.CodigoTipo,
                 DataMovimentacao = DateOnly.FromDateTime(movimentacaoParaEditar.DataMovimentacao),
-                DespesaFixa = movimentacaoParaEditar.DespesaFixa,
                 Descricao = movimentacaoParaEditar.Descricao,
                 Valor = Math.Abs(movimentacaoParaEditar.Valor)
             };
@@ -266,7 +267,7 @@ namespace ControleFinanceiro.Services
                 throw new Exception("O código da categoria movimentação não foi informado");
 
             using var conn = new SqlConnection(ConnectionString);
-            conn.Execute("UPDATE Movimentacao SET Baixado = @Baixado, DespesaFixa = @DespesaFixa, DataDaCompra = @DataDaCompra, CodigoCartao = @CodigoCartao, DataMovimentacao = @DataMovimentacao,Valor = @Valor,CodigoCategoria = @CodigoCategoria,CodigoTipo = @CodigoTipo,Descricao = @Descricao WHERE Codigo = @Codigo", movimentacao);
+            conn.Execute("UPDATE Movimentacao SET Baixado = @Baixado, DataDaCompra = @DataDaCompra, CodigoCartao = @CodigoCartao, DataMovimentacao = @DataMovimentacao,Valor = @Valor,CodigoCategoria = @CodigoCategoria,CodigoTipo = @CodigoTipo,Descricao = @Descricao WHERE Codigo = @Codigo", movimentacao);
         }
 
         public List<Movimentacao> SelectSQL(
@@ -385,7 +386,7 @@ namespace ControleFinanceiro.Services
         private void InsertSQL(Movimentacao movimentacao)
         {
             var conn = new SqlConnection(ConnectionString);
-            conn.Execute("insert into Movimentacao (CodigoMovimentacaoRecorrente,DespesaFixa,Codigo,DataDaCompra,CodigoCartao,CodigoParcelamento,DataMovimentacao,DataHora,Valor,CodigoCategoria,CodigoTipo,Descricao) values (@CodigoMovimentacaoRecorrente,@DespesaFixa,@Codigo,@DataDaCompra,@CodigoCartao,@CodigoParcelamento,@DataMovimentacao,@DataHora,@Valor,@CodigoCategoria,@CodigoTipo,@Descricao)", movimentacao);
+            conn.Execute("insert into Movimentacao (CodigoMovimentacaoRecorrente,Codigo,DataDaCompra,CodigoCartao,CodigoParcelamento,DataMovimentacao,DataHora,Valor,CodigoCategoria,CodigoTipo,Descricao) values (@CodigoMovimentacaoRecorrente,@Codigo,@DataDaCompra,@CodigoCartao,@CodigoParcelamento,@DataMovimentacao,@DataHora,@Valor,@CodigoCategoria,@CodigoTipo,@Descricao)", movimentacao);
         }
 
         #endregion
