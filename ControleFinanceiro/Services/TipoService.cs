@@ -1,8 +1,7 @@
 ﻿using ControleFinanceiro.Entities;
 using ControleFinanceiro.ValueObjects;
 using Dapper;
-using System.Data.SqlClient;
-using System.Reflection;
+using Microsoft.Data.SqlClient;
 
 namespace ControleFinanceiro.Services
 {

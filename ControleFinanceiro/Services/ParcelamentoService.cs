@@ -2,7 +2,7 @@
 using ControleFinanceiro.Models;
 using ControleFinanceiro.ValueObjects;
 using Dapper;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Text;
 using System.Transactions;
 
