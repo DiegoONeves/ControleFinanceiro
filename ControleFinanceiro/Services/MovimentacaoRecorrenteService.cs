@@ -73,8 +73,11 @@ namespace ControleFinanceiro.Services
             DeleteSQL(codigoMovimentacaoRecorrente);
             scope.Complete();
         }
-        public IEnumerable<MovimentacaoRecorrenteViewModel> BuscarMovimentacoesRecorrentes() => DePara(SelectSQL());
+        public IEnumerable<MovimentacaoRecorrenteViewModel> BuscarMovimentacoesRecorrentes() => Ordenar(DePara(SelectSQL()));
 
+        private IEnumerable<MovimentacaoRecorrenteViewModel> Ordenar(IEnumerable<MovimentacaoRecorrenteViewModel> movimentacoesRecorrentesViewModel) 
+            => movimentacoesRecorrentesViewModel.OrderBy(x => x.Finalizado).ToList();
+        
         private IEnumerable<MovimentacaoRecorrenteViewModel> DePara(List<MovimentacaoRecorrente> movimentacoesRecorrentes)
         {
             foreach (var item in movimentacoesRecorrentes)
@@ -85,7 +88,9 @@ namespace ControleFinanceiro.Services
                     Categoria = item.Categoria.Descricao,
                     Tipo = item.Tipo.Descricao,
                     Descricao = item.Descricao,
-                    Valor = item.Valor
+                    Valor = item.Valor,
+                    DataVencimento = item.DataDaUltimaMovimentacao,
+                    Finalizado = item.DataDaUltimaMovimentacao < DateTime.Now
                 };
             }
         }

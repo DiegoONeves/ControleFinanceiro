@@ -139,6 +139,7 @@ namespace ControleFinanceiro.Services
             parcelamentoEdicao.DataPrimeiraParcela = dataPrimeiraParcela;
             parcelamentoEdicao.DataUltimaParcela = dataPrimeiraParcela.AddMonths(model.QuantidadeParcela - 1);
             parcelamentoEdicao.QuantidadeParcela = model.QuantidadeParcela;
+            parcelamentoEdicao.Descricao = model.Descricao;
             parcelamentoEdicao.DataDaCompra = dataDaCompra;
 
             //edito o parcelamento

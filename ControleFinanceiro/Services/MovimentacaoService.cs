@@ -357,29 +357,29 @@ namespace ControleFinanceiro.Services
         }
         public void DeleteSQL(Guid? codigo = null, Guid? codigoParcelamento = null, Guid? codigoMovimentacaoRecorrente = null)
         {
-            var parametros = new List<Guid?> { codigo, codigoParcelamento, codigoMovimentacaoRecorrente };
+            var parametrosCodigos = new List<Guid?> { codigo, codigoParcelamento, codigoMovimentacaoRecorrente };
 
             StringBuilder sql = new();
-            sql.AppendLine(@"delete from Movimentacao where");
+            sql.AppendLine(@"delete from Movimentacao where 1 = 1");
 
-            if (!parametros.Any(x => x.HasValue))
+            if (!parametrosCodigos.Any(x => x.HasValue))
                 throw new Exception("Nenhum parâmetro foi fornecido para peração de exclusão de movimentação");
 
-            if (parametros[0] is not null)
-                sql.AppendLine("Codigo = @Codigo");
+            if (parametrosCodigos[0] is not null)
+                sql.AppendLine("and Codigo = @Codigo");
 
-            else if (parametros[1] is not null)
-                sql.AppendLine("CodigoParcelamento = @CodigoParcelamento");
+            else if (parametrosCodigos[1] is not null)
+                sql.AppendLine("and CodigoParcelamento = @CodigoParcelamento");
 
-            else if (parametros[2] is not null)
-                sql.AppendLine("CodigoMovimentacaoRecorrente = @CodigoMovimentacaoRecorrente");
+            else if (parametrosCodigos[2] is not null)
+                sql.AppendLine("and CodigoMovimentacaoRecorrente = @CodigoMovimentacaoRecorrente");
 
             using var conn = new SqlConnection(ConnectionString);
             conn.Execute(sql.ToString(), new
             {
-                @Codigo = parametros[0],
-                @CodigoParcelamento = parametros[1],
-                @CodigoMovimentacaoRecorrente = parametros[2]
+                @Codigo = parametrosCodigos[0],
+                @CodigoParcelamento = parametrosCodigos[1],
+                @CodigoMovimentacaoRecorrente = parametrosCodigos[2]
             });
         }
 

@@ -24,7 +24,7 @@
     <tbody>
         @foreach (var item in Model)
         {
-            <tr>
+            <tr class="@(item.Finalizado?"table-primary": "")">
                 <td>@item.Categoria</td>
                 <td>@item.Descricao</td>
                 <td>@item.Valor.ToString("C")</td>
